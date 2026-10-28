@@ -432,41 +432,7 @@ if st.session_state.modulo_activo == "Panel Principal":
         if st.button("Abrir Carnet Digital ➔", key="btn_carnet"):
             st.session_state.modulo_activo = "Generar Carnet Digital (Con Foto y Logo)"
             st.rerun()
-st.markdown("---")
-st.subheader("🗑️ Gestión y Eliminación de Archivos por Carpeta")
 
-# Diccionario con las carpetas reales que tienes en tu proyecto
-carpetas_disponibles = {
-    "Documentos de Exoneración": "documentos_exoneracion",
-    "Fotos del Club": "fotos_club",
-    "Macroestructura": "macroestructura_archivos",
-    "Videos del Club": "videos_club"
-}
-
-# Selector para que elijas qué carpeta deseas administrar
-seleccion_carpeta = st.selectbox("Selecciona la categoría a gestionar:", list(carpetas_disponibles.keys()))
-CARPETA_ARCHIVOS = carpetas_disponibles[seleccion_carpeta]
-
-if os.path.exists(CARPETA_ARCHIVOS):
-    archivos = os.listdir(CARPETA_ARCHIVOS)
-    if archivos:
-        st.write(f"Archivos en **{seleccion_carpeta}**:")
-        for archivo in archivos:
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                st.write(f"📄 {archivo}")
-            with col2:
-                if st.button("🗑️ Borrar", key=f"del_{CARPETA_ARCHIVOS}_{archivo}"):
-                    try:
-                        os.remove(os.path.join(CARPETA_ARCHIVOS, archivo))
-                        st.success(f"¡{archivo} eliminado con éxito!")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"Error al borrar: {e}")
-    else:
-        st.info(f"La carpeta '{seleccion_carpeta}' está vacía.")
-else:
-    st.info(f"La carpeta '{CARPETA_ARCHIVOS}' no existe todavía.")
     with c_mod2:
         st.markdown("""
             <div class="card-servicio bg-verde">
@@ -779,18 +745,26 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
             if archivos_pdf:
                 st.write(f"Se encontraron **{len(archivos_pdf)}** documentos firmados en el sistema:")
                 for archivo in archivos_pdf:
-                    col_p1, col_p2 = st.columns([3, 1])
+                    col_p1, col_p2, col_p3 = st.columns([2, 1, 1])
                     with col_p1:
                         st.write(f"📄 `{archivo.name}`")
                     with col_p2:
                         with open(archivo, "rb") as f:
                             st.download_button(
-                                label="⬇️ Descargar PDF",
+                                label="⬇️ Descargar",
                                 data=f,
                                 file_name=archivo.name,
                                 mime="application/pdf",
                                 key=f"dl_panel_{archivo.name}"
                             )
+                    with col_p3:
+                        if st.button("🗑️ Borrar", key=f"del_pdf_{archivo.name}"):
+                            try:
+                                archivo.unlink()
+                                st.success(f"¡{archivo.name} eliminado!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Error: {e}")
             else:
                 st.info("No hay documentos PDF cargados todavía.")
                 
@@ -806,11 +780,7 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
     
     with tab_multi_fotos:
         st.subheader("Registro y Visualización de Fotografías")
-        sub_f_subir, sub_f_ver, sub_f_borrar = st.tabs([
-    "Subir Fotografía",
-    "Ver Galería",
-    "🗑️ Eliminar Fotografía",
-])
+        sub_f_subir, sub_f_ver, sub_f_borrar = st.tabs(["Subir Fotografía", "Ver Galería", "🗑️ Eliminar Fotografía"])
         
         with sub_f_subir:
             with st.form("form_subir_foto"):
@@ -855,63 +825,29 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
                         st.info("No hay fotografías en la galería todavía.")
             else:
                 st.info("Aún no hay registros en la galería.")
-                with sub_f_borrar:
-  st.subheader("Gestión y Borrado de Fotografías")
-  if os.path.exists(FOTOS_CLUB_DIR):
-    fotos_disponibles = os.listdir(FOTOS_CLUB_DIR)
-    if fotos_disponibles:
-      foto_seleccionada = st.selectbox(
-          "Selecciona la foto que deseas eliminar:", fotos_disponibles
-      )
-      # Muestra una vista previa de la foto antes de borrarla
-      st.image(
-          os.path.join(FOTOS_CLUB_DIR, foto_seleccionada),
-          width=300,
-          caption=foto_seleccionada,
-      )
 
-      if st.button("❌ Eliminar Fotografía Permanentemente"):
-        ruta_a_borrar = os.path.join(FOTOS_CLUB_DIR, foto_seleccionada)
-        if os.path.exists(ruta_a_borrar):
-          os.remove(ruta_a_borrar)
-          st.success(
-              f"La fotografía '{foto_seleccionada}' ha sido eliminada con"
-              " éxito."
-          )
-          st.rerun()
-    else:
-      st.info("No hay fotografías almacenadas para eliminar.")
-  else:
-    st.info("La carpeta de fotos no existe o está vacía.")
+        with sub_f_borrar:
+            st.subheader("Gestión y Borrado de Fotografías")
+            if os.path.exists(FOTOS_CLUB_DIR):
+                fotos_disponibles = os.listdir(FOTOS_CLUB_DIR)
+                if fotos_disponibles:
+                    foto_seleccionada = st.selectbox("Selecciona la foto que deseas eliminar:", fotos_disponibles, key="sel_foto_del")
+                    st.image(os.path.join(FOTOS_CLUB_DIR, foto_seleccionada), width=300, caption=foto_seleccionada)
+                    
+                    if st.button("❌ Eliminar Fotografía Permanentemente", key="btn_del_foto_perm"):
+                        ruta_a_borrar = os.path.join(FOTOS_CLUB_DIR, foto_seleccionada)
+                        if os.path.exists(ruta_a_borrar):
+                            os.remove(ruta_a_borrar)
+                            st.success(f"La fotografía '{foto_seleccionada}' ha sido eliminada con éxito.")
+                            st.rerun()
+                else:
+                    st.info("No hay fotografías almacenadas para eliminar.")
+            else:
+                st.info("La carpeta de fotos no existe o está vacía.")
                 
     with tab_multi_videos:
         st.subheader("Videoteca de Combates y Poomsae")
-        sub_v_subir, sub_v_ver = st.tabs(["Subir Video", "Ver Videoteca"])
-        sub_v_subir, sub_v_ver, sub_v_borrar = st.tabs(
-    ["Subir Video", "Ver Videoteca", "🗑️ Eliminar Video"]
-)with sub_v_borrar:
-  st.subheader("Gestión y Borrado de Videos")
-  if os.path.exists(VIDEOS_CLUB_DIR):
-    videos_disponibles = os.listdir(VIDEOS_CLUB_DIR)
-    if videos_disponibles:
-      video_seleccionado = st.selectbox(
-          "Selecciona el video que deseas eliminar:", videos_disponibles
-      )
-      # Muestra el reproductor del video seleccionado antes de borrarlo
-      st.video(os.path.join(VIDEOS_CLUB_DIR, video_seleccionado))
-
-      if st.button("❌ Eliminar Video Permanentemente"):
-        ruta_video_borrar = os.path.join(VIDEOS_CLUB_DIR, video_seleccionado)
-        if os.path.exists(ruta_video_borrar):
-          os.remove(ruta_video_borrar)
-          st.success(
-              f"El video '{video_seleccionado}' ha sido eliminado con éxito."
-          )
-          st.rerun()
-    else:
-      st.info("No hay videos almacenados para eliminar.")
-  else:
-    st.info("La carpeta de videos no existe o está vacía.")
+        sub_v_subir, sub_v_ver, sub_v_borrar = st.tabs(["Subir Video", "Ver Videoteca", "🗑️ Eliminar Video"])
         
         with sub_v_subir:
             with st.form("form_subir_video_multi"):
@@ -964,66 +900,97 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
             else:
                 st.info("Aún no se ha creado el registro de videos.")
 
+        with sub_v_borrar:
+            st.subheader("Gestión y Borrado de Videos")
+            if os.path.exists(VIDEOS_DIR):
+                videos_disponibles = os.listdir(VIDEOS_DIR)
+                if videos_disponibles:
+                    video_seleccionado = st.selectbox("Selecciona el video que deseas eliminar:", videos_disponibles, key="sel_vid_del")
+                    st.video(os.path.join(VIDEOS_DIR, video_seleccionado))
+
+                    if st.button("❌ Eliminar Video Permanentemente", key="btn_del_vid_perm"):
+                        ruta_video_borrar = os.path.join(VIDEOS_DIR, video_seleccionado)
+                        if os.path.exists(ruta_video_borrar):
+                            os.remove(ruta_video_borrar)
+                            st.success(f"El video '{video_seleccionado}' ha sido eliminado con éxito.")
+                            st.rerun()
+                else:
+                    st.info("No hay videos almacenados para eliminar.")
+            else:
+                st.info("La carpeta de videos no existe o está vacía.")
+
 elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
     st.header("📄 Carta de Exoneración y Deslinde de Responsabilidad")
-    st.markdown("""
-    sub_ex_subir, sub_ex_ver, sub_ex_borrar = st.tabs([
-    "Subir Exoneración",
-    "Ver Documentos",
-    "🗑️ Eliminar Exoneración",
-])
-    <div class="exoneracion-box">
-        <b>CLUB JINSEI TAEKWONDO TENJO</b><br>
-        <b>ACUERDO DE EXONERACIÓN DE RESPONSABILIDAD Y ASUNCIÓN DE RIESGOS</b><br>
-        <i>Sede: Tenjo, Cundinamarca — Vereda Chincé, Sector Zoque</i><br><br>
-        Por medio del presente documento, el deportista o su acudiente legal declaran que entienden y aceptan que la práctica del Taekwondo, Poomsae, Kyorugi, defensa personal y entrenamiento físico conllevan riesgos inherentes de lesión física.<br><br>
-        1. Eximo voluntariamente al Club Jinsei Taekwondo Tenjo, instructores, directivos y personal administrativo de cualquier responsabilidad legal por accidentes, lesiones o incidentes derivados de la práctica deportiva.<br>
-        2. Certifico que el deportista se encuentra en condiciones óptimas de salud física y mental para realizar actividad física de alta exigencia.<br>
-        3. Autorizo la atención médica de emergencia en caso de requerirse.
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown("---")
     
-    with st.form("form_exoneracion_pdf"):
-        st.subheader("Subir su Carta de Exoneración Firmada (PDF)")
-        nombre_atleta_ex = st.text_input("Nombre Completo del Deportista")
-        pdf_subido = st.file_uploader("Seleccione el archivo PDF firmado", type=["pdf"])
-        submit_pdf = st.form_submit_button("Subir Documento al Sistema")
+    sub_ex_subir, sub_ex_ver, sub_ex_borrar = st.tabs(["Subir Exoneración", "Ver Documentos", "🗑️ Eliminar Exoneración"])
+    
+    with sub_ex_subir:
+        st.markdown("""
+        <div class="exoneracion-box">
+            <b>CLUB JINSEI TAEKWONDO TENJO</b><br>
+            <b>ACUERDO DE EXONERACIÓN DE RESPONSABILIDAD Y ASUNCIÓN DE RIESGOS</b><br>
+            <i>Sede: Tenjo, Cundinamarca — Vereda Chincé, Sector Zoque</i><br><br>
+            Por medio del presente documento, el deportista o su acudiente legal declaran que entienden y aceptan que la práctica del Taekwondo, Poomsae, Kyorugi, defensa personal y entrenamiento físico conllevan riesgos inherentes de lesión física.<br><br>
+            1. Eximo voluntariamente al Club Jinsei Taekwondo Tenjo, instructores, directivos y personal administrativo de cualquier responsabilidad legal por accidentes, lesiones o incidentes derivados de la práctica deportiva.<br>
+            2. Certifico que el deportista se encuentra en condiciones óptimas de salud física y mental para realizar actividad física de alta exigencia.<br>
+            3. Autorizo la atención médica de emergencia en caso de requerirse.
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("---")
         
-        if submit_pdf:
-            if nombre_atleta_ex and pdf_subido is not None:
-                nombre_limpio = nombre_atleta_ex.replace(" ", "_").lower()
-                ruta_destino = EXONERACIONES_DIR / f"exoneracion_{nombre_limpio}.pdf"
-                with open(ruta_destino, "wb") as f:
-                    f.write(pdf_subido.getbuffer())
-                st.success(f"¡Documento de {nombre_atleta_ex} cargado exitosamente! El entrenador podrá revisarlo desde su panel.")
+        with st.form("form_exoneracion_pdf"):
+            st.subheader("Subir su Carta de Exoneración Firmada (PDF)")
+            nombre_atleta_ex = st.text_input("Nombre Completo del Deportista")
+            pdf_subido = st.file_uploader("Seleccione el archivo PDF firmado", type=["pdf"])
+            submit_pdf = st.form_submit_button("Subir Documento al Sistema")
+            
+            if submit_pdf:
+                if nombre_atleta_ex and pdf_subido is not None:
+                    nombre_limpio = nombre_atleta_ex.replace(" ", "_").lower()
+                    ruta_destino = EXONERACIONES_DIR / f"exoneracion_{nombre_limpio}.pdf"
+                    with open(ruta_destino, "wb") as f:
+                        f.write(pdf_subido.getbuffer())
+                    st.success(f"¡Documento de {nombre_atleta_ex} cargado exitosamente! El entrenador podrá revisarlo desde su panel.")
+                else:
+                    st.warning("Por favor ingrese el nombre y adjunte el archivo PDF.")
+
+    with sub_ex_ver:
+        st.subheader("Documentos de Exoneración Registrados")
+        archivos_pdf_ver = list(EXONERACIONES_DIR.glob("*.pdf"))
+        if archivos_pdf_ver:
+            for archivo in archivos_pdf_ver:
+                col_v1, col_v2 = st.columns([3, 1])
+                with col_v1:
+                    st.write(f"📄 `{archivo.name}`")
+                with col_v2:
+                    with open(archivo, "rb") as f_dl:
+                        st.download_button(
+                            label="⬇️ Descargar",
+                            data=f_dl,
+                            file_name=archivo.name,
+                            mime="application/pdf",
+                            key=f"dl_exon_tab_{archivo.name}"
+                        )
+        else:
+            st.info("No hay documentos de exoneración cargados todavía.")
+
+    with sub_ex_borrar:
+        st.subheader("Gestión y Borrado de Documentos de Exoneración")
+        if os.path.exists(EXONERACIONES_DIR):
+            docs_disponibles = [f for f in os.listdir(EXONERACIONES_DIR) if f.lower().endswith(".pdf")]
+            if docs_disponibles:
+                doc_seleccionado = st.selectbox("Selecciona el documento PDF que deseas eliminar:", docs_disponibles, key="sel_doc_del")
+
+                if st.button("❌ Eliminar Documento Permanentemente", key="btn_del_doc_perm"):
+                    ruta_doc_borrar = os.path.join(EXONERACIONES_DIR, doc_seleccionado)
+                    if os.path.exists(ruta_doc_borrar):
+                        os.remove(ruta_doc_borrar)
+                        st.success(f"El documento '{doc_seleccionado}' ha sido eliminado con éxito.")
+                        st.rerun()
             else:
-                st.warning("Por favor ingrese el nombre y adjunte el archivo PDF.")
-                with sub_ex_borrar:
-  st.subheader("Gestión y Borrado de Documentos de Exoneración")
-  CARPETA_EXONERACION = "documentos_exoneracion"
-
-  if os.path.exists(CARPETA_EXONERACION):
-    docs_disponibles = [
-        f for f in os.listdir(CARPETA_EXONERACION) if f.lower().endswith(".pdf")
-    ]
-    if docs_disponibles:
-      doc_seleccionado = st.selectbox(
-          "Selecciona el documento PDF que deseas eliminar:", docs_disponibles
-      )
-
-      if st.button("❌ Eliminar Documento Permanentemente"):
-        ruta_doc_borrar = os.path.join(CARPETA_EXONERACION, doc_seleccionado)
-        if os.path.exists(ruta_doc_borrar):
-          os.remove(ruta_doc_borrar)
-          st.success(
-              f"El documento '{doc_seleccionado}' ha sido eliminado con éxito."
-          )
-          st.rerun()
-    else:
-      st.info("No hay documentos de exoneración para eliminar.")
-  else:
-    st.info("La carpeta de documentos de exoneración no existe o está vacía.")
+                st.info("No hay documentos de exoneración para eliminar.")
+        else:
+            st.info("La carpeta de documentos de exoneración no existe o está vacía.")
 
 elif st.session_state.modulo_activo == "Generar Carnet Digital (Con Foto y Logo)":
     st.header("📇 Generador de Carnet Digital Oficial")
