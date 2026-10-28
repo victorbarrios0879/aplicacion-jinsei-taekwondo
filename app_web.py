@@ -836,152 +836,91 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
         st.error("⚠️ Contraseña incorrecta. Acceso denegado al panel de administración.")
 
 # --- MÓDULO UNIFICADO MULTIMEDIA: FOTOGRAFÍAS Y VIDEOS ---
-elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
-    st.header("🖼️🎥 Galería y Videoteca del Club")
-    st.write("Explora y comparte el material audiovisual, fotografías de podios y videos de entrenamiento del club.")
+elif st.session_state.modulo_activo == "Galería y Vídeos (Multimedia)":
+    st.header("📸 Galería y Videoteca del Club Jinsei Taekwondo")
     
-    tab_multi_fotos, tab_multi_videos = st.tabs(["📸 Fotografías y Logros", "🎥 Videoteca Técnica"])
+    tab_galeria, tab_subir_media, tab_borrar_media = st.tabs(["Ver Fotos y Vídeos", "📤 Cargar Archivos", "🗑️ Gestionar / Eliminar"])
     
-    with tab_multi_fotos:
-        st.subheader("Registro y Visualización de Fotografías")
-        sub_f_subir, sub_f_ver, sub_f_borrar = st.tabs(["Subir Fotografía", "Ver Galería", "🗑️ Eliminar Fotografía"])
-        
-        with sub_f_subir:
-            with st.form("form_subir_foto"):
-                titulo_foto = st.text_input("Título o Descripción de la Foto (Ej: Podio Torneo Open Tenjo)")
-                archivo_foto_sub = st.file_uploader("Seleccione imagen (JPG, PNG)", type=["jpg", "png", "jpeg"])
-                submit_foto = st.form_submit_button("Guardar Fotografía")
-                
-                if submit_foto:
-                    if titulo_foto and archivo_foto_sub is not None:
-                        nombre_limpio_f = titulo_foto.replace(" ", "_").lower()
-                        ext_f = archivo_foto_sub.name.split('.')[-1]
-                        nombre_foto_final = f"{nombre_limpio_f}.{ext_f}"
-                        ruta_foto_dest = FOTOS_CLUB_DIR / nombre_foto_final
-                        with open(ruta_foto_dest, "wb") as f:
-                            f.write(archivo_foto_sub.getbuffer())
-                            
-                        file_exists_f = os.path.exists(ARCHIVO_FOTOS_CSV)
-                        with open(ARCHIVO_FOTOS_CSV, mode="a", newline="", encoding="utf-8") as f:
-                            writer_f = csv.writer(f)
-                            if not file_exists_f:
-                                writer_f.writerow(["Titulo", "Archivo", "Fecha"])
-                            writer_f.writerow([titulo_foto, nombre_foto_final, datetime.now().strftime("%Y-%m-%d")])
-                        st.success("¡Fotografía guardada con éxito en la galería!")
-                    else:
-                        st.warning("Por favor ingrese un título y seleccione una imagen.")
-                        
-        with sub_f_ver:
-            if os.path.exists(ARCHIVO_FOTOS_CSV):
-                with open(ARCHIVO_FOTOS_CSV, mode="r", encoding="utf-8") as f:
-                    reader_f = list(csv.reader(f))
-                    if len(reader_f) > 1:
-                        cols = st.columns(2)
-                        idx = 0
-                        for row in reader_f[1:]:
-                            tit_f, arch_f, fec_f = row[0], row[1], row[2]
-                            ruta_img_galeria = FOTOS_CLUB_DIR / arch_f
-                            if ruta_img_galeria.exists():
-                                with cols[idx % 2]:
-                                    st.image(str(ruta_img_galeria), caption=f"{tit_f} ({fec_f})", use_container_width=True)
-                                idx += 1
-                    else:
-                        st.info("No hay fotografías en la galería todavía.")
+    with tab_galeria:
+        st.subheader("Fotografías del Club")
+        if os.path.exists(FOTOS_DIR):
+            fotos = [f for f in os.listdir(FOTOS_DIR) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+            if fotos:
+                cols_fotos = st.columns(3)
+                for i, foto in enumerate(fotos):
+                    with cols_fotos[i % 3]:
+                        st.image(os.path.join(FOTOS_DIR, foto), caption=foto, use_container_width=True)
             else:
-                st.info("Aún no hay registros en la galería.")
+                st.info("No hay fotos en la galería aún.")
+        else:
+            st.info("La carpeta de fotos no existe.")
+            
+        st.markdown("---")
+        st.subheader("Vídeos del Club")
+        if os.path.exists(VIDEOS_DIR):
+            videos = [f for f in os.listdir(VIDEOS_DIR) if f.lower().endswith(('.mp4', '.mov', '.avi'))]
+            if videos:
+                for video in videos:
+                    st.write(f"🎥 `{video}`")
+                    st.video(os.path.join(VIDEOS_DIR, video))
+            else:
+                st.info("No hay vídeos almacenados aún.")
+        else:
+            st.info("La carpeta de vídeos no existe.")
+                
+    with tab_subir_media:
+        st.subheader("Subir Nueva Foto o Vídeo")
+        tipo_archivo = st.radio("Seleccione el tipo de archivo", ["Foto", "Vídeo"])
+        
+        if tipo_archivo == "Foto":
+            foto_nueva = st.file_uploader("Selecciona una foto", type=["jpg", "jpeg", "png"], key="up_foto_mult")
+            if st.button("Guardar Foto", key="btn_save_foto_mult"):
+                if foto_nueva is not None:
+                    ruta_foto = os.path.join(FOTOS_DIR, foto_nueva.name)
+                    with open(ruta_foto, "wb") as f:
+                        f.write(foto_nueva.getbuffer())
+                    st.success(f"Foto '{foto_nueva.name}' subida con éxito.")
+                    st.rerun()
+        else:
+            video_nuevo = st.file_uploader("Selecciona un vídeo", type=["mp4", "mov", "avi"], key="up_video_mult")
+            if st.button("Guardar Vídeo", key="btn_save_video_mult"):
+                if video_nuevo is not None:
+                    ruta_video = os.path.join(VIDEOS_DIR, video_nuevo.name)
+                    with open(ruta_video, "wb") as f:
+                        f.write(video_nuevo.getbuffer())
+                    st.success(f"Vídeo '{video_nuevo.name}' subido con éxito.")
+                    st.rerun()
 
-        with sub_f_borrar:
-            st.subheader("Gestión y Borrado de Fotografías")
-            if os.path.exists(FOTOS_CLUB_DIR):
-                fotos_disponibles = os.listdir(FOTOS_CLUB_DIR)
-                if fotos_disponibles:
-                    foto_seleccionada = st.selectbox("Selecciona la foto que deseas eliminar:", fotos_disponibles, key="sel_foto_del")
-                    st.image(os.path.join(FOTOS_CLUB_DIR, foto_seleccionada), width=300, caption=foto_seleccionada)
-                    
-                    if st.button("❌ Eliminar Fotografía Permanentemente", key="btn_del_foto_perm"):
-                        ruta_a_borrar = os.path.join(FOTOS_CLUB_DIR, foto_seleccionada)
-                        if os.path.exists(ruta_a_borrar):
-                            os.remove(ruta_a_borrar)
-                            st.success(f"La fotografía '{foto_seleccionada}' ha sido eliminada con éxito.")
-                            st.rerun()
+    with tab_borrar_media:
+        st.subheader("🗑️ Eliminar Archivos Multimedia")
+        tipo_borrar = st.radio("¿Qué desea eliminar?", ["Foto", "Vídeo"], key="tipo_del_media")
+        
+        if tipo_borrar == "Foto":
+            if os.path.exists(FOTOS_DIR):
+                fotos_del = [f for f in os.listdir(FOTOS_DIR) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+                if fotos_del:
+                    foto_sel = st.selectbox("Selecciona la foto a eliminar:", fotos_del, key="sel_foto_del")
+                    if st.button("❌ Eliminar Foto Seleccionada", key="btn_del_foto_exec"):
+                        os.remove(os.path.join(FOTOS_DIR, foto_sel))
+                        st.success(f"Foto '{foto_sel}' eliminada exitosamente.")
+                        st.rerun()
                 else:
-                    st.info("No hay fotografías almacenadas para eliminar.")
+                    st.info("No hay fotos para eliminar.")
             else:
-                st.info("La carpeta de fotos no existe o está vacía.")
-                
-    with tab_multi_videos:
-        st.subheader("Videoteca de Combates y Poomsae")
-        sub_v_subir, sub_v_ver, sub_v_borrar = st.tabs(["Subir Video", "Ver Videoteca", "🗑️ Eliminar Video"])
-        
-        with sub_v_subir:
-            with st.form("form_subir_video_multi"):
-                titulo_video = st.text_input("Título o Descripción del Video (Ej: Poomsae Taegeuk 1)")
-                categoria_video = st.selectbox("Categoría", ["Kyorugi (Combate)", "Poomsae (Formas)", "Defensa Personal", "Preparación Física"])
-                archivo_video = st.file_uploader("Seleccione archivo de video (MP4, MOV, AVI)", type=["mp4", "mov", "avi"])
-                enlace_externo = st.text_input("Opcional: Enlace de YouTube / Drive")
-                
-                submit_video = st.form_submit_button("Guardar Video en el Sistema")
-                
-                if submit_video:
-                    if titulo_video and (archivo_video is not None or enlace_externo):
-                        nombre_archivo_final = ""
-                        if archivo_video is not None:
-                            nombre_limpio = titulo_video.replace(" ", "_").lower()
-                            ext = archivo_video.name.split('.')[-1]
-                            nombre_archivo_final = f"{nombre_limpio}.{ext}"
-                            ruta_vid_destino = VIDEOS_DIR / nombre_archivo_final
-                            with open(ruta_vid_destino, "wb") as f:
-                                f.write(archivo_video.getbuffer())
-                        
-                        file_exists_v = os.path.exists(ARCHIVO_VIDEOS_CSV)
-                        with open(ARCHIVO_VIDEOS_CSV, mode="a", newline="", encoding="utf-8") as f:
-                            writer = csv.writer(f)
-                            if not file_exists_v:
-                                writer.writerow(["Titulo", "Categoria", "ArchivoLocal", "EnlaceExterno", "Fecha"])
-                            writer.writerow([titulo_video, categoria_video, nombre_archivo_final, enlace_externo, datetime.now().strftime("%Y-%m-%d")])
-                            
-                        st.success("¡Video registrado con éxito en la videoteca!")
-                    else:
-                        st.warning("Por favor ingrese un título y adjunte un video o enlace.")
-                        
-        with sub_v_ver:
-            if os.path.exists(ARCHIVO_VIDEOS_CSV):
-                with open(ARCHIVO_VIDEOS_CSV, mode="r", encoding="utf-8") as f:
-                    reader_v = list(csv.reader(f))
-                    if len(reader_v) > 1:
-                        for row in reader_v[1:]:
-                            tit, cat, loc, ext_link, fec = row[0], row[1], row[2], row[3], row[4]
-                            st.markdown(f"### 🥋 {tit}")
-                            st.caption(f"Categoría: {cat} | Fecha: {fec}")
-                            
-                            if loc and (VIDEOS_DIR / loc).exists():
-                                st.video(str(VIDEOS_DIR / loc))
-                            if ext_link:
-                                st.markdown(f"🔗 [Enlace externo de apoyo]({ext_link})")
-                            st.markdown("---")
-                    else:
-                        st.info("No hay videos registrados en la videoteca todavía.")
-            else:
-                st.info("Aún no se ha creado el registro de videos.")
-
-        with sub_v_borrar:
-            st.subheader("Gestión y Borrado de Videos")
+                st.info("La carpeta de fotos no existe.")
+        else:
             if os.path.exists(VIDEOS_DIR):
-                videos_disponibles = os.listdir(VIDEOS_DIR)
-                if videos_disponibles:
-                    video_seleccionado = st.selectbox("Selecciona el video que deseas eliminar:", videos_disponibles, key="sel_vid_del")
-                    st.video(os.path.join(VIDEOS_DIR, video_seleccionado))
-
-                    if st.button("❌ Eliminar Video Permanentemente", key="btn_del_vid_perm"):
-                        ruta_video_borrar = os.path.join(VIDEOS_DIR, video_seleccionado)
-                        if os.path.exists(ruta_video_borrar):
-                            os.remove(ruta_video_borrar)
-                            st.success(f"El video '{video_seleccionado}' ha sido eliminado con éxito.")
-                            st.rerun()
+                videos_del = [f for f in os.listdir(VIDEOS_DIR) if f.lower().endswith(('.mp4', '.mov', '.avi'))]
+                if videos_del:
+                    video_sel = st.selectbox("Selecciona el vídeo a eliminar:", videos_del, key="sel_video_del")
+                    if st.button("❌ Eliminar Vídeo Seleccionado", key="btn_del_video_exec"):
+                        os.remove(os.path.join(VIDEOS_DIR, video_sel))
+                        st.success(f"Vídeo '{video_sel}' eliminado exitosamente.")
+                        st.rerun()
                 else:
-                    st.info("No hay videos almacenados para eliminar.")
+                    st.info("No hay vídeos para eliminar.")
             else:
-                st.info("La carpeta de videos no existe o está vacía.")
+                st.info("La carpeta de vídeos no existe.")
 
 elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
     st.header("📄 Carta de Exoneración y Documentos PDF")
