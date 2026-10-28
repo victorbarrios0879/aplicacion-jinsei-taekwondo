@@ -484,7 +484,7 @@ if st.session_state.modulo_activo == "Panel Principal":
             </div>
         """, unsafe_allow_html=True)
         if st.button("Abrir Multimedia ➔", key="btn_multimedia"):
-            st.session_state.modulo_activo = "Galería y Videos (Multimedia)"
+            st.session_state.modulo_activo = "Galería y Videos (Multimedia) NUEVO":
             st.rerun()
 
         st.markdown("""
@@ -836,7 +836,7 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
         st.error("⚠️ Contraseña incorrecta. Acceso denegado al panel de administración.")
 
 # --- MÓDULO UNIFICADO MULTIMEDIA: FOTOGRAFÍAS Y VIDEOS ---
-elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
+ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia) NUEVO":
     st.header("📸 Galería y Videoteca del Club Jinsei Taekwondo")
     
     # Menú simple en radio para alternar entre gestionar fotos o videos
