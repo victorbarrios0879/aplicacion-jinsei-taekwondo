@@ -318,7 +318,7 @@ modulos_lista = [
     "Control de Asistencia",
     "Panel General del Entrenador (Solo Coach)",
     "Galería y Videos (Multimedia)",
-    "elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
+    elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
     st.header("📄 Carta de Exoneración y Deslinde de Responsabilidad")
     
     sub_ex_subir, sub_ex_ver, sub_ex_borrar = st.tabs(["Subir Exoneración", "Ver Documentos", "🗑️ Eliminar Exoneración"])
@@ -389,7 +389,7 @@ modulos_lista = [
             else:
                 st.info("No hay documentos de exoneración para eliminar.")
         else:
-            st.info("La carpeta de documentos de exoneración no existe o está vacía.")",
+            st.info("La carpeta de documentos de exoneración no existe o está vacía.")
     "Generar Carnet Digital (Con Foto y Logo)",
     "Agenda de Torneos y Eventos (Cargar/Manual)",
     "Pagos (Alerta)"
