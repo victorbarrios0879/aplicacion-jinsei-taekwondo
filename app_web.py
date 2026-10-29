@@ -586,9 +586,7 @@ if len(reader) > 1:
                                 writer.writerow(["Fecha", "Nombre", "Estado"])
                             for nombre, estado in asistencias_marcadas.items():
                                 writer.writerow([str(fecha_asistencia), nombre, "Presente" if estado else "Ausente"])
-                        st.success("¡Asistencia registrada correctamente!")
-if len(reader) > 1:
-if len(reader) > 1:
+ if len(reader) > 1:
             nombres = [row[0] for row in reader[1:]]
             with st.form("form_asistencia"):
                 st.subheader(f"Lista de Asistencia - {fecha_asistencia.strftime('%d/%m/%Y')}")
@@ -608,7 +606,6 @@ if len(reader) > 1:
                 st.success("¡Asistencia registrada correctamente!")
         else:
             st.info("No hay deportistas registrados para tomar asistencia.")
-if os.path.exists(ARCHIVO_ASISTENCIAS):
     with open(ARCHIVO_ASISTENCIAS, mode="r", encoding="utf-8") as f:
         reader = list(csv.reader(f))
     if len(reader) > 1:
