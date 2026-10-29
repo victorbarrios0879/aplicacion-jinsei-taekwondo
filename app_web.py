@@ -547,25 +547,7 @@ with c_mod2:
     if st.button("📄 Abrir Exoneraciones", use_container_width=True, key="btn_m6"):
         st.session_state.modulo_activo = "Cargar Fichas, Exoneraciones y PDFs"
         st.rerun()
-   edad = row[2] if len(row) > 2 else "N/A"
-ep = row[3] if len(row) > 3 else "N/A"
-peso = float(row[4]) if len(row) > 4 else 60.0
-estatura = float(row[5]) if len(row) > 5 else 1.78
-grd = row[6] if len(row) > 6 else "N/A"
-tel = row[7] if len(row) > 7 else "N/A"
-                            
-imc = peso / (estatura ** 2)
-st.info(f"**Documento:** {doc} | **Edad:** {ed} años | **EPS:** {ep} | **Contacto:** {tel}")
-st.write(f"**Grado Actual:** {grd}")
-if imc < 18.5:
-    st.warning("Clasificación IMC: Bajo peso")
-elif 18.5 <= imc < 25:
-    st.success("Clasificación IMC: Peso normal (Saludable)")
-elif 25 <= imc < 30:
-    st.warning("Clasificación IMC: Sobrepeso")
-else:
-    st.error("Clasificación IMC: Obesidad")
-st.write("Registre la asistencia diaria de los alumnos a las clases de Taekwondo y Funcional.")
+ 
 fecha_asistencia = st.date_input("Fecha de la sesión", value=datetime.now())
 if os.path.exists(ARCHIVO_DEPORTISTAS):
     with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
