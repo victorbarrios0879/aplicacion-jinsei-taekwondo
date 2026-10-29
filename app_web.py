@@ -472,7 +472,7 @@ if st.session_state.modulo_activo == "Panel Principal":
             st.rerun()
 
     st.markdown("---")
- st.subheader("⚡ Acceso Rápido a Módulos de Trabajo")
+st.subheader("⚡ Acceso Rápido a Módulos de Trabajo")
 
 c_mod1, c_mod2 = st.columns(2)
 
