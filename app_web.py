@@ -482,7 +482,7 @@ if st.session_state.modulo_activo == "Panel Principal":
             </div>
         """, unsafe_allow_html=True)
         if st.button("Abrir Multimedia ➔", key="btn_multimedia"):
-            st.session_state.modulo_activo = "Galería y Videos (Multimedia) NUEVO":
+            st.session_state.modulo_activo = "Galería y Videos (Multimedia) NUEVO"
             st.rerun()
 
         st.markdown("""
