@@ -548,16 +548,16 @@ with c_mod2:
         st.session_state.modulo_activo = "Cargar Fichas, Exoneraciones y PDFs"
         st.rerun()
 ed = row[2] if len(row) > 2 else "N/A"
-    ep = row[3] if len(row) > 3 else "N/A"
-    peso = float(row[4]) if len(row) > 4 else 60.0
-     estatura = float(row[5]) if len(row) > 5 else 1.70
-    grd = row[6] if len(row) > 6 else "N/A"
-    tel = row[7] if len(row) > 7 else "N/A"
+ep = row[3] if len(row) > 3 else "N/A"
+ peso = float(row[4]) if len(row) > 4 else 60.0
+ estatura = float(row[5]) if len(row) > 5 else 1.70
+grd = row[6] if len(row) > 6 else "N/A"
+tel = row[7] if len(row) > 7 else "N/A"
                             
-    imc = peso / (estatura ** 2)
-    st.info(f"**Documento:** {doc} | **Edad:** {ed} años | **EPS:** {ep} | **Contacto:** {tel}")
-    st.write(f"**Grado Actual:** {grd}")
-    st.metric(label="Índice de Masa Corporal (IMC)", value=f"{imc:.2f}")
+imc = peso / (estatura ** 2)
+st.info(f"**Documento:** {doc} | **Edad:** {ed} años | **EPS:** {ep} | **Contacto:** {tel}")
+st.write(f"**Grado Actual:** {grd}")
+st.metric(label="Índice de Masa Corporal (IMC)", value=f"{imc:.2f}")
     if imc < 18.5:
         st.warning("Clasificación IMC: Bajo peso")
     elif 18.5 <= imc < 25:
