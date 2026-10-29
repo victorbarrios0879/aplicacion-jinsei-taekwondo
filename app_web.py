@@ -6,6 +6,13 @@ from pathlib import Path
 from datetime import datetime
 from PIL import Image
 
+# Inicializar variables de estado al iniciar la app
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = False
+
+if "modulo_activo" not in st.session_state:
+    st.session_state.modulo_activo = "Panel Principal"
+
 # Configuración de la página web
 st.set_page_config(
     page_title="Jinsei Taekwondo Tenjo - Panel Principal",
