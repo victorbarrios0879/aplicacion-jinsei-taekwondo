@@ -568,9 +568,9 @@ else:
 st.write("Registre la asistencia diaria de los alumnos a las clases de Taekwondo y Funcional.")
 fecha_asistencia = st.date_input("Fecha de la sesión", value=datetime.now())
 if os.path.exists(ARCHIVO_DEPORTISTAS):
-        with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
-            reader = list(csv.reader(f))
-if len(reader) > 1:
+    with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
+        reader = list(csv.reader(f))
+    if len(reader) > 1:
         nombres = [row[0] for row in reader[1:]]
         with st.form("form_asistencia"):
             st.subheader(f"Lista de Asistencia - {fecha_asistencia.strftime('%d/%m/%Y')}")
@@ -590,21 +590,8 @@ if len(reader) > 1:
             st.success("¡Asistencia registrada correctamente!")
     else:
         st.info("No hay deportistas registrados para tomar asistencia.")
-if os.path.exists(ARCHIVO_ASISTENCIAS):
-    with open(ARCHIVO_ASISTENCIAS, mode="r", encoding="utf-8") as f:
-        reader = list(csv.reader(f))
-    if len(reader) > 1:
-        with open(ARCHIVO_ASISTENCIAS, "rb") as file_asist_csv:
-            st.download_button(
-                label=" Descargar Historial de Asistencias (Excel/CSV)",
-                data=file_asist_csv,
-                file_name="asistencias_jinsei.csv",
-                mime="text/csv",
-            )
-        st.markdown("---")
-        st.table(reader[1:])
-    else:
-        st.info("No hay historial guardado aún.")
+else:
+    st.info("Aún no existe una base de datos de deportistas.")
 
 # --- MÓDULO UNIFICADO PROTEGIDO: PANEL GENERAL DEL ENTRENADOR ---
 elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach)":
