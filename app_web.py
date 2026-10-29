@@ -315,13 +315,8 @@ if not st.session_state.autenticado:
 # ----------------- APLICACIÓN PRINCIPAL -----------------
 st.sidebar.title(f"👤 {st.session_state.usuario_actual}")
 # Definir IMG_LOGO por seguridad si no existe
-if 'LOGO_BASE64' in locals() and LOGO_BASE64:
-    IMG_LOGO = LOGO_BASE64
-else:
-    IMG_LOGO = ""
-
-if IMG_LOGO:
-    st.sidebar.image(base64.b64decode(IMG_LOGO), use_container_width=True)
+# Cargar el logo oficial directamente desde la carpeta assets en la barra lateral
+st.sidebar.image("assets/logo.JPG.jpeg", use_container_width=True)
 
 # Botón rápido de contacto en la barra lateral
 st.sidebar.markdown(f"📱 **Contacto / Pagos:**\n`{NUMERO_PAGOS_DIGITALES}`")
@@ -425,10 +420,9 @@ elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
 
 menu = st.sidebar.selectbox(
     "Seleccione un módulo:",
-    modulos_lista,
-    index=modulos_lista.index(st.session_state.modulo_activo) if st.session_state.modulo_activo in modulos_lista else 0
+    ["Panel Principal", "Deportistas", "Asistencias", "Macroestructura", "Pagos"],
+    key="menu_lateral_principal"
 )
-
 st.session_state.modulo_activo = menu
 
 if st.sidebar.button("🚪 Cerrar Sesión"):
