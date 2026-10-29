@@ -547,7 +547,7 @@ with c_mod2:
     if st.button("📄 Abrir Exoneraciones", use_container_width=True, key="btn_m6"):
         st.session_state.modulo_activo = "Cargar Fichas, Exoneraciones y PDFs"
         st.rerun()
-      ed = row[2] if len(row) > 2 else "N/A"
+ed = row[2] if len(row) > 2 else "N/A"
     ep = row[3] if len(row) > 3 else "N/A"
     peso = float(row[4]) if len(row) > 4 else 60.0
      estatura = float(row[5]) if len(row) > 5 else 1.70
