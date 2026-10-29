@@ -320,7 +320,7 @@ if 'LOGO_BASE64' in locals() and LOGO_BASE64:
 else:
     IMG_LOGO = ""
 
-  if IMG_LOGO:
+if IMG_LOGO:
     st.sidebar.image(base64.b64decode(IMG_LOGO), use_container_width=True)
 
 # Botón rápido de contacto en la barra lateral
