@@ -2,18 +2,43 @@ import streamlit as st
 import os
 
 # Configuración inicial de la página
-st.set_page_config(page_title="Jinsei Taekwondo Tenjo", page_icon="🥋", layout="wide")
+st.set_page_config(
+    page_title="Club Jinsei Taekwondo Tenjo",
+    page_icon="🥋",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# --- ESTILOS CSS PERSONALIZADOS (FONDO Y DISEÑO) ---
+st.markdown("""
+    <style>
+    .stApp {
+        background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), 
+                          url("https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=1920&auto=format&fit=crop");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+    .exoneracion-box {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #dee2e6;
+        color: #212529;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # Inicializar estados si no existen
 if "usuario_actual" not in st.session_state:
-    st.session_state.usuario_actual = "Invitado"
+    st.session_state.usuario_actual = "Entrenador Victor"
 if "modulo_activo" not in st.session_state:
     st.session_state.modulo_activo = "Panel Principal"
 
 # --- BARRA LATERAL (SIDEBAR) ---
 st.sidebar.title(f"👤 {st.session_state.usuario_actual}")
 
-# Logotipo o imagen si existe
+# Logotipo oficial o respaldo
 IMG_LOGO = "assets/logo.png" if os.path.exists("assets/logo.png") else None
 if IMG_LOGO:
     st.sidebar.image(IMG_LOGO, use_container_width=True)
@@ -22,7 +47,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown(f"**Contacto / Pagos:**\n`3125046952`")
 st.sidebar.markdown("---")
 
-# Lista de módulos del sistema
+# Lista completa de módulos del sistema
 modulos_lista = [
     "Panel Principal",
     "Ficha Integral del Deportista e IMC",
@@ -55,20 +80,32 @@ if st.sidebar.button("Cerrar Sesión"):
 # 1. PANEL PRINCIPAL
 if st.session_state.modulo_activo == "Panel Principal":
     st.title("🥋 Club Jinsei Taekwondo Tenjo")
-    st.markdown("Bienvenido al sistema oficial de gestión deportiva, académica y administrativa.")
+    st.markdown("Sistema oficial de gestión deportiva, académica y administrativa.")
     st.markdown("---")
+    
     col1, col2, col3 = st.columns(3)
     with col1:
-        if st.button("📁 Gestionar Exoneraciones y PDFs"):
+        if st.button("📁 Exoneraciones y PDFs", use_container_width=True):
             st.session_state.modulo_activo = "Cargar Fichas, Exoneraciones y PDFs"
             st.rerun()
     with col2:
-        if st.button("🖼️ Ir a Multimedia y Videos"):
+        if st.button("🖼️ Galería y Multimedia", use_container_width=True):
             st.session_state.modulo_activo = "Galeria y Videos (Multimedia)"
             st.rerun()
     with col3:
-        if st.button("📅 Ver Agenda de Torneos"):
+        if st.button("📅 Agenda de Torneos", use_container_width=True):
             st.session_state.modulo_activo = "Agenda de Torneos y Eventos"
+            st.rerun()
+
+    st.markdown("---")
+    col4, col5 = st.columns(2)
+    with col4:
+        if st.button("📊 Ficha Integral y IMC", use_container_width=True):
+            st.session_state.modulo_activo = "Ficha Integral del Deportista e IMC"
+            st.rerun()
+    with col5:
+        if st.button("📋 Control de Asistencia", use_container_width=True):
+            st.session_state.modulo_activo = "Control de Asistencia"
             st.rerun()
 
 # 2. FICHA INTEGRAL Y EXONERACIONES
@@ -85,7 +122,16 @@ elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
     tab_subir, tab_ver, tab_borrar = st.tabs(["Subir Documento", "Ver Documentos", "Eliminar Documento"])
 
     with tab_subir:
-        st.markdown("### Subir Carta de Exoneración o Documento (PDF)")
+        st.markdown("""
+            <div class="exoneracion-box">
+                <b>CLUB JINSEI TAEKWONDO TENJO</b><br>
+                <b>ACUERDO DE EXONERACIÓN DE RESPONSABILIDAD Y ASUNCIÓN DE RIESGOS</b><br>
+                <i>Sede: Tenjo, Cundinamarca – Vereda Chincé, Sector Zoque</i><br>
+                Por medio del presente documento, el deportista o su acudiente legal declaran que entienden y aceptan la práctica deportiva.
+            </div>
+        """, unsafe_allow_html=True)
+        st.markdown("---")
+        
         with st.form("form_exoneracion_pdf"):
             nombre_atleta_ex = st.text_input("Nombre Completo del Deportista")
             pdf_subido = st.file_uploader("Seleccione el archivo PDF", type=["pdf"])
@@ -129,7 +175,7 @@ elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
         else:
             st.info("La carpeta de documentos no existe.")
 
-# 3. GALERÍA Y VIDEOS (MULTIMEDIA CON OPCIÓN DE ELIMINAR PARA EL COACH)
+# 3. GALERÍA Y VIDEOS (MULTIMEDIA)
 elif st.session_state.modulo_activo == "Galeria y Videos (Multimedia)":
     if st.button("⬅️ Volver al Panel Principal", key="btn_volver_multimedia"):
         st.session_state.modulo_activo = "Panel Principal"
