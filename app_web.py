@@ -316,8 +316,7 @@ if not st.session_state.autenticado:
 st.sidebar.title(f"👤 {st.session_state.usuario_actual}")
 # Definir IMG_LOGO por seguridad si no existe
 # Cargar el logo oficial directamente desde la carpeta assets en la barra lateral
-st.sidebar.image("assets/logo.JPG.jpeg", use_container_width=True)
-
+st.sidebar.image("assets/logo_jinsei.jpg", use_container_width=True)
 # Botón rápido de contacto en la barra lateral
 st.sidebar.markdown(f"📱 **Contacto / Pagos:**\n`{NUMERO_PAGOS_DIGITALES}`")
 st.sidebar.markdown("---")
@@ -420,9 +419,10 @@ elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
 
 menu = st.sidebar.selectbox(
     "Seleccione un módulo:",
-    ["Panel Principal", "Deportistas", "Asistencias", "Macroestructura", "Pagos"],
-    key="menu_lateral_principal"
+    modulos_lista,
+    index=modulos_lista.index(st.session_state.modulo_activo) if st.session_state.modulo_activo in modulos_lista else 0
 )
+
 st.session_state.modulo_activo = menu
 
 if st.sidebar.button("🚪 Cerrar Sesión"):
