@@ -566,16 +566,16 @@ elif 25 <= imc < 30:
     st.warning("Clasificación IMC: Sobrepeso")
 else:
     st.error("Clasificación IMC: Obesidad")
-                else:
+else:
                     st.info("No hay deportistas registrados todavía.")
-        else:
-            st.info("No hay registros guardados aún.")
+else:
+st.info("No hay registros guardados aún.")
 
 elif st.session_state.modulo_activo == "Control de Asistencia":
-    st.header("📋 Control de Asistencia de Deportistas")
-    st.write("Registre la asistencia diaria de los alumnos a las clases de Taekwondo y Funcional.")
-    fecha_asistencia = st.date_input("Fecha de la sesión", value=datetime.now())
-    if os.path.exists(ARCHIVO_DEPORTISTAS):
+st.header("📋 Control de Asistencia de Deportistas")
+st.write("Registre la asistencia diaria de los alumnos a las clases de Taekwondo y Funcional.")
+fecha_asistencia = st.date_input("Fecha de la sesión", value=datetime.now())
+if os.path.exists(ARCHIVO_DEPORTISTAS):
         with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
             reader = list(csv.reader(f))
             if len(reader) > 1:
