@@ -558,9 +558,9 @@ imc = peso / (estatura ** 2)
 st.info(f"**Documento:** {doc} | **Edad:** {ed} años | **EPS:** {ep} | **Contacto:** {tel}")
 st.write(f"**Grado Actual:** {grd}")
 st.metric(label="Índice de Masa Corporal (IMC)", value=f"{imc:.2f}")
-    if imc < 18.5:
+if imc < 18.5:
         st.warning("Clasificación IMC: Bajo peso")
-    elif 18.5 <= imc < 25:
+elif 18.5 <= imc < 25:
     st.success("Clasificación IMC: Peso normal (Saludable)")
 elif 25 <= imc < 30:
     st.warning("Clasificación IMC: Sobrepeso")
