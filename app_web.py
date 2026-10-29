@@ -316,7 +316,7 @@ if not st.session_state.autenticado:
 st.sidebar.title(f"👤 {st.session_state.usuario_actual}")
 # Definir IMG_LOGO por seguridad si no existe
 # Cargar el logo oficial directamente desde la carpeta assets en la barra lateral
-st.sidebar.image("assets/logo_jinsei.jpg", use_container_width=True)
+st.sidebar.image("assets/logo.jpg", use_container_width=True)
 # Botón rápido de contacto en la barra lateral
 st.sidebar.markdown(f"📱 **Contacto / Pagos:**\n`{NUMERO_PAGOS_DIGITALES}`")
 st.sidebar.markdown("---")
