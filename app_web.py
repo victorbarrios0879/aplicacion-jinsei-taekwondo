@@ -472,88 +472,81 @@ if st.session_state.modulo_activo == "Panel Principal":
             st.rerun()
 
     st.markdown("---")
-  # --- PANELES DE NAVEGACIÓN DIRECTA ---
+ st.subheader("⚡ Acceso Rápido a Módulos de Trabajo")
 
-if st.button("📁 01 - Ficha Integral e IMC\n\nRegistro completo de datos de deportistas, EPS y cálculo nutricional IMC.", use_container_width=True, key="btn_mod_1"):
-    st.session_state.modulo_activo = "Ficha Integral del Deportista e IMC"
-    st.rerun()
+c_mod1, c_mod2 = st.columns(2)
 
-if st.button("🥋 02 - Panel General del Entrenador\n\nCentro administrativo: gestión de deportistas, macroestructura y documentos.", use_container_width=True, key="btn_mod_2"):
-    st.session_state.modulo_activo = "Panel General del Entrenador (Solo Coach)"
-    st.rerun()
+with c_mod1:
+    st.markdown("""
+        <div class="card-servicio bg-azul">
+            <div class="card-title-custom"><span class="badge-icon">01</span> Ficha Integral e IMC</div>
+            <div class="card-desc-custom">Registro completo de datos de deportistas, EPS y cálculo nutricional IMC.</div>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("📁 Abrir Ficha e IMC", use_container_width=True, key="btn_m1"):
+        st.session_state.modulo_activo = "Ficha Integral del Deportista e IMC"
+        st.rerun()
 
-if st.button("📸 03 - Galería y Videos (Multimedia)\n\nCarga de podios, medallas, fotografías y videoteca técnica del club.", use_container_width=True, key="btn_mod_3"):
-    st.session_state.modulo_activo = "Galeria y Videos (Multimedia)"
-    st.rerun()
+    st.markdown("""
+        <div class="card-servicio bg-rojo">
+            <div class="card-title-custom"><span class="badge-icon">03</span> Galería y Videos (Multimedia)</div>
+            <div class="card-desc-custom">Carga de podios, medallas, fotografías y videoteca técnica del club.</div>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("📸 Abrir Multimedia", use_container_width=True, key="btn_m3"):
+        st.session_state.modulo_activo = "Galeria y Videos (Multimedia)"
+        st.rerun()
 
-if st.button("🏅 04 - Generar Carnet Digital\n\nGeneración inmediata del carnet oficial con foto e insignia.", use_container_width=True, key="btn_mod_4"):
-    st.session_state.modulo_activo = "Generar Carnet Digital (Con Foto y Logo)"
-    st.rerun()
+    st.markdown("""
+        <div class="card-servicio bg-verde">
+            <div class="card-title-custom"><span class="badge-icon">05</span> Control de Asistencia</div>
+            <div class="card-desc-custom">Registro de asistencia diaria por sesión y consulta de historial.</div>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("📊 Abrir Asistencia", use_container_width=True, key="btn_m5"):
+        st.session_state.modulo_activo = "Control de Asistencia"
+        st.rerun()
 
-if st.button("📊 05 - Control de Asistencia\n\nRegistro de asistencia diaria por sesión y consulta de historial.", use_container_width=True, key="btn_mod_5"):
-    st.session_state.modulo_activo = "Control de Asistencia"
-    st.rerun()
+    st.markdown("""
+        <div class="card-servicio bg-amarillo">
+            <div class="card-title-custom"><span class="badge-icon">07</span> Agenda de Torneos y Eventos</div>
+            <div class="card-desc-custom">Calendario interactivo de exámenes y campeonatos.</div>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("🏆 Abrir Agenda", use_container_width=True, key="btn_m7"):
+        st.session_state.modulo_activo = "Agenda de Torneos y Eventos"
+        st.rerun()
 
-if st.button("📄 06 - Exoneraciones y PDFs\n\nFirma digital y subida de cartas de deslinde de responsabilidad legal.", use_container_width=True, key="btn_mod_6"):
-    st.session_state.modulo_activo = "Cargar Fichas, Exoneraciones y PDFs"
-    st.rerun()
+with c_mod2:
+    st.markdown("""
+        <div class="card-servicio bg-verde">
+            <div class="card-title-custom"><span class="badge-icon">02</span> Panel General del Entrenador</div>
+            <div class="card-desc-custom">Centro administrativo: gestión de deportistas, macroestructura y documentos.</div>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("🥋 Abrir Panel Coach", use_container_width=True, key="btn_m2"):
+        st.session_state.modulo_activo = "Panel General del Entrenador (Solo Coach)"
+        st.rerun()
 
-if st.button("🏆 07 - Agenda de Torneos y Eventos\n\nCalendario interactivo de exámenes y campeonatos.", use_container_width=True, key="btn_mod_7"):
-    st.session_state.modulo_activo = "Agenda de Torneos y Eventos"
-    st.rerun()
-# --- MÓDULOS SECUNDARIOS ---
-elif st.session_state.modulo_activo == "Ficha Integral del Deportista e IMC":
-    st.header("📝 Ficha Integral y Registro de Atletas")
-    tab_reg, tab_cons = st.tabs(["Registrar Nuevo Atleta", "Consultar Fichas e IMC"])
-    
-    with tab_reg:
-        with st.form("form_deportista_completo"):
-            col_a, col_b = st.columns(2)
-            with col_a:
-                nombre = st.text_input("Nombre Completo del Atleta")
-                documento = st.text_input("Número de Documento")
-                edad = st.number_input("Edad", min_value=3, max_value=99, value=15)
-                eps = st.text_input("EPS / Seguro Médico")
-            with col_b:
-                peso = st.number_input("Peso (kg)", min_value=10.0, max_value=200.0, value=60.0)
-                estatura = st.number_input("Estatura (m)", min_value=0.5, max_value=2.5, value=1.70)
-                grado = st.selectbox("Grado (Kup / Dan)", ["Blanco (10° Kup)", "Amarillo (8° Kup)", "Verde (6° Kup)", "Azul (4° Kup)", "Rojo (2° Kup)", "Negro (1° Dan)"])
-                contacto = st.text_input("Teléfono de Emergencia")
-            
-            guardar = st.form_submit_button("Guardar Ficha deportiva")
-            if guardar:
-                if nombre:
-                    file_exists = os.path.exists(ARCHIVO_DEPORTISTAS)
-                    with open(ARCHIVO_DEPORTISTAS, mode="a", newline="", encoding="utf-8") as f:
-                        writer = csv.writer(f)
-                        if not file_exists:
-                            writer.writerow(["Nombre", "Documento", "Edad", "EPS", "Peso", "Estatura", "Grado", "Contacto"])
-                        writer.writerow([nombre, documento, edad, eps, peso, estatura, grado, contacto])
-                    st.success(f"¡Ficha de {nombre} guardada exitosamente!")
-                else:
-                    st.warning("Por favor ingrese al menos el nombre del deportista.")
-                    
-    with tab_cons:
-        st.subheader("Evaluación Antropométrica e Historial")
-        if os.path.exists(ARCHIVO_DEPORTISTAS):
-            with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
-                reader = list(csv.reader(f))
-                if len(reader) > 1:
-                    with open(ARCHIVO_DEPORTISTAS, "rb") as file_csv:
-                        st.download_button(
-                            label="📥 Descargar Base de Datos de Deportistas (Excel/CSV)",
-                            data=file_csv,
-                            file_name="deportistas_jinsei.csv",
-                            mime="text/csv"
-                        )
-                    st.markdown("---")
-                    
-                    nombres = [row[0] for row in reader[1:]]
-                    seleccionado = st.selectbox("Seleccione un deportista:", nombres)
-                    
-                    for row in reader[1:]:
-                        if row[0] == seleccionado:
-                            doc = row[1] if len(row) > 1 else "N/A"
+    st.markdown("""
+        <div class="card-servicio bg-amarillo">
+            <div class="card-title-custom"><span class="badge-icon">04</span> Generar Carnet Digital</div>
+            <div class="card-desc-custom">Generación inmediata del carnet oficial con foto e insignia.</div>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("🏅 Abrir Carnet", use_container_width=True, key="btn_m4"):
+        st.session_state.modulo_activo = "Generar Carnet Digital (Con Foto y Logo)"
+        st.rerun()
+
+    st.markdown("""
+        <div class="card-servicio bg-azul">
+            <div class="card-title-custom"><span class="badge-icon">06</span> Exoneraciones y PDFs</div>
+            <div class="card-desc-custom">Firma digital y subida de cartas de deslinde de responsabilidad legal.</div>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("📄 Abrir Exoneraciones", use_container_width=True, key="btn_m6"):
+        st.session_state.modulo_activo = "Cargar Fichas, Exoneraciones y PDFs"
+        st.rerun()
                             ed = row[2] if len(row) > 2 else "N/A"
                             ep = row[3] if len(row) > 3 else "N/A"
                             peso = float(row[4]) if len(row) > 4 else 60.0
