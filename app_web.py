@@ -394,7 +394,7 @@ elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
     "Generar Carnet Digital (Con Foto y Logo)",
     "Agenda de Torneos y Eventos (Cargar/Manual)",
     "Pagos (Alerta)"
-]
+
 
 menu = st.sidebar.selectbox(
     "Seleccione un módulo:",
