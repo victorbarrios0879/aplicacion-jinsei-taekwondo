@@ -577,7 +577,7 @@ if len(reader) > 1:
                     asistencias_marcadas = {}
                     for nombre in nombres:
                         asistencias_marcadas[nombre] = st.checkbox(f"Presente: {nombre}", value=True)
- if guardar_asistencia:
+                 if guardar_asistencia:
             file_exists = os.path.exists(ARCHIVO_ASISTENCIAS)
             with open(ARCHIVO_ASISTENCIAS, mode="a", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
