@@ -604,26 +604,28 @@ if len(reader) > 1:
                     for nombre, estado in asistencias_marcadas.items():
                         writer.writerow([str(fecha_asistencia), nombre, "Presente" if estado else "Ausente"])
                 st.success("¡Asistencia registrada correctamente!")
-              else:
-                  st.info("No hay deportistas registrados para tomar asistencia.")
- else:
-    st.info("Aún no existe una base de datos de deportistas.")
-    st.subheader("Historial de Asistencias Registradas")
-    if os.path.exists(ARCHIVO_ASISTENCIAS):
-        with open(ARCHIVO_ASISTENCIAS, mode="r", encoding="utf-8") as f:
-            reader = list(csv.reader(f))
-            if len(reader) > 1:
-                with open(ARCHIVO_ASISTENCIAS, "rb") as file_asist_csv:
-                    st.download_button(
-                        label="📥 Descargar Historial de Asistencias (Excel/CSV)",
-                        data=file_asist_csv,
-                        file_name="asistencias_jinsei.csv",
-                        mime="text/csv"
-                    )
-                st.markdown("---")
-                st.table(reader[1:])
-            else:
-                st.info("No hay historial guardado aún.")
+        else:
+            st.info("No hay deportistas registrados para tomar asistencia.")
+    else:
+        st.info("Aún no existe una base de datos de deportistas.")
+
+st.markdown("---")
+st.subheader("Historial de Asistencias Registradas")
+if os.path.exists(ARCHIVO_ASISTENCIAS):
+    with open(ARCHIVO_ASISTENCIAS, mode="r", encoding="utf-8") as f:
+        reader = list(csv.reader(f))
+    if len(reader) > 1:
+        with open(ARCHIVO_ASISTENCIAS, "rb") as file_asist_csv:
+            st.download_button(
+                label=" Descargar Historial de Asistencias (Excel/CSV)",
+                data=file_asist_csv,
+                file_name="asistencias_jinsei.csv",
+                mime="text/csv",
+            )
+        st.markdown("---")
+        st.table(reader[1:])
+    else:
+        st.info("No hay historial guardado aún.")
 
 # --- MÓDULO UNIFICADO PROTEGIDO: PANEL GENERAL DEL ENTRENADOR ---
 elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach)":
