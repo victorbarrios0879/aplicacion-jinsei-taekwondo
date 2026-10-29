@@ -594,7 +594,7 @@ else:
     st.info("Aún no existe una base de datos de deportistas.")
 
 # --- MÓDULO UNIFICADO PROTEGIDO: PANEL GENERAL DEL ENTRENADOR ---
-elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach)":
+if st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach)":
     st.header("⚙️ Panel General del Entrenador (Exclusivo Coach)")
     st.write("Área administrativa protegida para la gestión completa del dojang, deportistas, planificaciones y documentos.")
     
