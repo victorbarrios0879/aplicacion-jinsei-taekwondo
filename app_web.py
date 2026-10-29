@@ -566,7 +566,7 @@ elif 25 <= imc < 30:
     st.warning("Clasificación IMC: Sobrepeso")
 else:
     st.error("Clasificación IMC: Obesidad")
-                    st.info("No hay deportistas registrados todavía.")
+st.info("No hay deportistas registrados todavía.")
 else:
 st.info("No hay registros guardados aún.")
 
