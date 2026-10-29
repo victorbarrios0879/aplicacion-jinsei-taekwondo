@@ -565,8 +565,6 @@ elif 25 <= imc < 30:
     st.warning("Clasificación IMC: Sobrepeso")
 else:
     st.error("Clasificación IMC: Obesidad")
-    else:
-        st.info("No hay deportistas registrados todavía.")
 st.write("Registre la asistencia diaria de los alumnos a las clases de Taekwondo y Funcional.")
 fecha_asistencia = st.date_input("Fecha de la sesión", value=datetime.now())
 if os.path.exists(ARCHIVO_DEPORTISTAS):
