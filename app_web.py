@@ -558,14 +558,13 @@ imc = peso / (estatura ** 2)
 st.info(f"**Documento:** {doc} | **Edad:** {ed} años | **EPS:** {ep} | **Contacto:** {tel}")
 st.write(f"**Grado Actual:** {grd}")
 if imc < 18.5:
- if imc < 18.5:
-            st.warning("Clasificación IMC: Bajo peso")
-        elif 18.5 <= imc < 25:
-            st.success("Clasificación IMC: Peso normal (Saludable)")
-        elif 25 <= imc < 30:
-            st.warning("Clasificación IMC: Sobrepeso")
-        else:
-            st.error("Clasificación IMC: Obesidad")
+    st.warning("Clasificación IMC: Bajo peso")
+elif 18.5 <= imc < 25:
+    st.success("Clasificación IMC: Peso normal (Saludable)")
+elif 25 <= imc < 30:
+    st.warning("Clasificación IMC: Sobrepeso")
+else:
+    st.error("Clasificación IMC: Obesidad")
     else:
         st.info("No hay deportistas registrados todavía.")
 st.write("Registre la asistencia diaria de los alumnos a las clases de Taekwondo y Funcional.")
