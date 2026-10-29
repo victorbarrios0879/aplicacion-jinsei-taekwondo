@@ -338,7 +338,7 @@ try:
 except ValueError:
     index_actual = 0
 
-modulo_seleccionado = st.sidebar.selectbox("Seleccione un módulo:", modulos_lista, index=index_actual)
+modulo_seleccionado = st.sidebar.selectbox("Seleccione un módulo:", modulos_lista, index=index_actual, key="menu_lateral_principal")
 st.session_state.modulo_activo = modulo_seleccionado
 
 # --- CUERPO PRINCIPAL ---
