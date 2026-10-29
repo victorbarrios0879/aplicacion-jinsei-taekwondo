@@ -588,7 +588,7 @@ if len(reader) > 1:
                     for nombre, estado in asistencias_marcadas.items():
                         writer.writerow([str(fecha_asistencia), nombre, "Presente" if estado else "Ausente"])
                 st.success("¡Asistencia registrada correctamente!")
-        else:
+ else:
             st.info("No hay deportistas registrados para tomar asistencia.")
 st.subheader("Historial de Asistencias Registradas")
 if os.path.exists(ARCHIVO_ASISTENCIAS):
