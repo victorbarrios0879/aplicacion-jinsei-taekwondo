@@ -312,16 +312,20 @@ if IMG_LOGO:
 st.sidebar.markdown(f"📱 **Contacto / Pagos:**\n`{NUMERO_PAGOS_DIGITALES}`")
 st.sidebar.markdown("---")
 
-modulos_lista = [
+
+    
+   modulos_lista = [
     "Panel Principal",
     "Ficha Integral del Deportista e IMC",
     "Control de Asistencia",
     "Panel General del Entrenador (Solo Coach)",
-    "Galería y Videos (Multimedia)",
-    elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
-    st.header("📄 Carta de Exoneración y Documentos PDF")
+    "Galeria y Videos (Multimedia)"
+]]
+
+if st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
+    st.header("Carta de Exoneración y Documentos PDF")
     
-    tab_subir, tab_ver, tab_borrar = st.tabs(["Subir Documento", "Ver Documentos", "🗑️ Eliminar Documento"])
+    tab_subir, tab_ver, tab_borrar = st.tabs(["Subir Documento", "Ver Documentos", "Eliminar Documento"])
     
     with tab_subir:
         st.markdown("""
