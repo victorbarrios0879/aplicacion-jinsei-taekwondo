@@ -61,7 +61,16 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+import os
+import base64
 
+# Cargar imagen de fondo de forma segura desde assets
+foto_bg_path = "assets/foto.JPG"  # O el archivo que tengas en assets
+if os.path.exists(foto_bg_path):
+    with open(foto_bg_path, "rb") as img_file:
+        FOTO_BG_BASE64 = base64.b64encode(img_file.read()).decode()
+else:
+    FOTO_BG_BASE64 = ""
 # ----------------- CSS: FONDO PROTAGÓNICO Y ENCABEZADO -----------------
 css_background = f"""
     <style>
