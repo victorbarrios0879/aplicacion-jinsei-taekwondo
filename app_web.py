@@ -384,9 +384,7 @@ if st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
         else:
             st.info("La carpeta de documentos no existe o está vacía.")
     "Generar Carnet Digital (Con Foto y Logo)",
-    "Agenda de Torneos y Eventos (Cargar/Manual)",
-    "Pagos (Alerta)"
-]
+   
 
 menu = st.sidebar.selectbox(
     "Seleccione un módulo:",
