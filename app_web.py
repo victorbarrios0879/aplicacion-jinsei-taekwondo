@@ -233,7 +233,7 @@ def recuperar_credenciales(email_consulta):
     return False, None, None
 
 # Cargar logo de forma segura en base64 para el login/encabezado
-logo_path = "assets/logo.jpg"
+logo_path = "assets/logo.JPG.jpeg"
 if os.path.exists(logo_path):
     with open(logo_path, "rb") as logo_file:
         LOGO_BASE64 = base64.b64encode(logo_file.read()).decode()
