@@ -472,87 +472,35 @@ if st.session_state.modulo_activo == "Panel Principal":
             st.rerun()
 
     st.markdown("---")
-    st.subheader("⚡ Acceso Rápido a Módulos de Trabajo")
+  # --- PANELES DE NAVEGACIÓN DIRECTA ---
 
-    c_mod1, c_mod2 = st.columns(2)
-    
-    with c_mod1:
-        st.markdown("""
-            <div class="card-servicio bg-azul">
-                <div class="card-title-custom"><span class="badge-icon">01</span> Ficha Integral e IMC</div>
-                <div class="card-desc-custom">Registro completo de datos de deportistas, EPS y cálculo nutricional IMC.</div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Abrir Fichas e IMC ➔", key="btn_fichas"):
-            st.session_state.modulo_activo = "Ficha Integral del Deportista e IMC"
-            st.rerun()
+if st.button("📁 01 - Ficha Integral e IMC\n\nRegistro completo de datos de deportistas, EPS y cálculo nutricional IMC.", use_container_width=True, key="btn_mod_1"):
+    st.session_state.modulo_activo = "Ficha Integral del Deportista e IMC"
+    st.rerun()
 
-        st.markdown("""
-            <div class="card-servicio bg-verde">
-                <div class="card-title-custom"><span class="badge-icon">02</span> Panel General del Entrenador</div>
-                <div class="card-desc-custom">Centro administrativo: gestión de deportistas, macroestructura y documentos.</div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Abrir Panel Coach ➔", key="btn_gestion"):
-            st.session_state.modulo_activo = "Panel General del Entrenador (Solo Coach)"
-            st.rerun()
+if st.button("🥋 02 - Panel General del Entrenador\n\nCentro administrativo: gestión de deportistas, macroestructura y documentos.", use_container_width=True, key="btn_mod_2"):
+    st.session_state.modulo_activo = "Panel General del Entrenador (Solo Coach)"
+    st.rerun()
 
-        st.markdown("""
-            <div class="card-servicio bg-rojo">
-                <div class="card-title-custom"><span class="badge-icon">03</span> Galería y Videos (Multimedia)</div>
-                <div class="card-desc-custom">Carga de podios, medallas, fotografías y videoteca técnica del club.</div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Abrir Multimedia ➔", key="btn_multimedia"):
-            st.session_state.modulo_activo = "Galería y Videos (Multimedia)"
-            st.rerun()
+if st.button("📸 03 - Galería y Videos (Multimedia)\n\nCarga de podios, medallas, fotografías y videoteca técnica del club.", use_container_width=True, key="btn_mod_3"):
+    st.session_state.modulo_activo = "Galeria y Videos (Multimedia)"
+    st.rerun()
 
-        st.markdown("""
-            <div class="card-servicio bg-amarillo">
-                <div class="card-title-custom"><span class="badge-icon">04</span> Generar Carnet Digital</div>
-                <div class="card-desc-custom">Generación inmediata del carnet oficial con foto e insignia.</div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Abrir Carnet Digital ➔", key="btn_carnet"):
-            st.session_state.modulo_activo = "Generar Carnet Digital (Con Foto y Logo)"
-            st.rerun()
+if st.button("🏅 04 - Generar Carnet Digital\n\nGeneración inmediata del carnet oficial con foto e insignia.", use_container_width=True, key="btn_mod_4"):
+    st.session_state.modulo_activo = "Generar Carnet Digital (Con Foto y Logo)"
+    st.rerun()
 
-    with c_mod2:
-        st.markdown("""
-            <div class="card-servicio bg-verde">
-                <div class="card-title-custom"><span class="badge-icon">05</span> Control de Asistencia</div>
-                <div class="card-desc-custom">Registro de asistencia diaria por sesión y consulta de historial.</div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Abrir Control de Asistencia ➔", key="btn_asistencia"):
-            st.session_state.modulo_activo = "Control de Asistencia"
-            st.rerun()
+if st.button("📊 05 - Control de Asistencia\n\nRegistro de asistencia diaria por sesión y consulta de historial.", use_container_width=True, key="btn_mod_5"):
+    st.session_state.modulo_activo = "Control de Asistencia"
+    st.rerun()
 
-        st.markdown("""
-            <div class="card-servicio bg-azul">
-                <div class="card-title-custom"><span class="badge-icon">06</span> Exoneraciones y PDFs</div>
-                <div class="card-desc-custom">Firma digital y subida de cartas de deslinde de responsabilidad legal.</div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Abrir Exoneraciones ➔", key="btn_exoneracion"):
-            st.session_state.modulo_activo = "Cargar Fichas, Exoneraciones y PDFs"
-            st.rerun()
+if st.button("📄 06 - Exoneraciones y PDFs\n\nFirma digital y subida de cartas de deslinde de responsabilidad legal.", use_container_width=True, key="btn_mod_6"):
+    st.session_state.modulo_activo = "Cargar Fichas, Exoneraciones y PDFs"
+    st.rerun()
 
-        st.markdown("""
-            <div class="card-servicio bg-amarillo">
-                <div class="card-title-custom"><span class="badge-icon">07</span> Agenda de Torneos y Eventos</div>
-                <div class="card-desc-custom">Calendario interactivo de exámenes y campeonatos.</div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Abrir Agenda de Eventos ➔", key="btn_agenda"):
-            st.session_state.modulo_activo = "Agenda de Torneos y Eventos (Cargar/Manual)"
-            st.rerun()
-
-    st.markdown("---")
-    st.write(f"📞 **Contacto / WhatsApp:** {TELEFONO_CLUB}")
-    st.write("📍 **Ubicación Sede Principal:** Tenjo, Cundinamarca — Vereda Chincé, Sector Zoque")
-    st.write("⏰ **Horarios de Entreno:** Lunes y Miércoles 4:00-8:00 PM | Sábados 10:00 AM-12:00 M")
-
+if st.button("🏆 07 - Agenda de Torneos y Eventos\n\nCalendario interactivo de exámenes y campeonatos.", use_container_width=True, key="btn_mod_7"):
+    st.session_state.modulo_activo = "Agenda de Torneos y Eventos"
+    st.rerun()
 # --- MÓDULOS SECUNDARIOS ---
 elif st.session_state.modulo_activo == "Ficha Integral del Deportista e IMC":
     st.header("📝 Ficha Integral y Registro de Atletas")
