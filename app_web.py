@@ -257,14 +257,14 @@ if not st.session_state.autenticado:
         st.markdown(html_header_login, unsafe_allow_html=True)
         
         tab1, tab2, tab3 = st.tabs(["🔑 Iniciar Sesión", "📝 Registrarse", "❓ Recuperar Credenciales"])
-        
-        with tab1:
-            with st.form("form_login"):
-                st.subheader("Ingrese a su cuenta")
-                usuario_ingreso = st.text_input("Usuario o Correo")
-                password_ingreso = st.text_input("Contraseña", type="password")
-                submit_ingreso = st.form_submit_button("Entrar al Sistema")
-                
+     with tab1:
+    if os.path.exists("assets/logo.png"):
+        st.image("assets/logo.png", width=120)
+    with st.form("form_login"):
+        st.subheader("Ingrese a su cuenta")
+        usuario_ingreso = st.text_input("Usuario o Correo")
+        password_ingreso = st.text_input("Contraseña", type="password")
+        submit_ingreso = st.form_submit_button("Entrar al Sistema")
                 if submit_ingreso:
                     if verificar_usuario(usuario_ingreso, password_ingreso):
                         st.session_state.autenticado = True
