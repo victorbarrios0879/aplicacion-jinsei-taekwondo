@@ -232,7 +232,13 @@ def recuperar_credenciales(email_consulta):
                     return True, row[0], row[1]
     return False, None, None
 
-# ----------------- PANTALLA DE ACCESO / REGISTRO / RECUPERACIÓN -----------------
+# Cargar logo de forma segura en base64 para el login/encabezado
+logo_path = "assets/logo.jpg"
+if os.path.exists(logo_path):
+    with open(logo_path, "rb") as logo_file:
+        LOGO_BASE64 = base64.b64encode(logo_file.read()).decode()
+else:
+    LOGO_BASE64 = ""
 if not st.session_state.autenticado:
     col_acc1, col_acc2, col_acc3 = st.columns([1, 2, 1])
     
