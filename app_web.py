@@ -305,8 +305,28 @@ modulos_lista = [
     "Ficha Integral del Deportista e IMC",
     "Control de Asistencia",
     "Panel General del Entrenador (Solo Coach)",
-    "Galería y Videos (Multimedia)",
-    elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
+    "Galeria y Videos (Multimedia)",
+    "Cargar Fichas, Exoneraciones y PDFs",
+    "Agenda de Torneos y Eventos",
+    "Pagos (Alerta)"
+]
+
+# Selector de navegación en la barra lateral
+try:
+    index_actual = modulos_lista.index(st.session_state.modulo_activo)
+except ValueError:
+    index_actual = 0
+
+modulo_seleccionado = st.sidebar.selectbox("Seleccione un módulo:", modulos_lista, index=index_actual)
+st.session_state.modulo_activo = modulo_seleccionado
+
+# --- CUERPO PRINCIPAL ---
+if st.session_state.modulo_activo == "Panel Principal":
+    st.title("🥋 Club Jinsei Taekwondo Tenjo")
+    st.markdown("Sistema oficial de gestión deportiva, académica y administrativa.")
+
+elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
+    st.header("Carta de Exoneración y Documentos PDF")
     st.header("📄 Carta de Exoneración y Documentos PDF")
     
     tab_subir, tab_ver, tab_borrar = st.tabs(["Subir Documento", "Ver Documentos", "🗑️ Eliminar Documento"])
