@@ -10,17 +10,39 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS CSS PERSONALIZADOS (FONDO REAL DEL CLUB Y DISEÑO) ---
-st.markdown("""
-    <style>
-    .stApp {
-        background-image: linear-gradient(rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.90)), 
-                          url("https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=1920&auto=format&fit=crop");
+# --- DETECTAR FOTO DE FONDO Y LOGOTIPO DESDE LA CARPETA ASSETS ---
+os.makedirs("assets", exist_ok=True)
+
+# Buscar logo en assets
+logo_path = None
+for f in os.listdir("assets"):
+    if f.lower().startswith("logo") and f.lower().endswith((".png", ".jpg", ".jpeg")):
+        logo_path = os.path.join("assets", f)
+        break
+
+# Buscar fondo de deportistas en assets
+fondo_path = None
+for f in os.listdir("assets"):
+    if any(k in f.lower() for k in ["fondo", "deportist", "taekwondo", "entren"]) and f.lower().endswith((".jpg", ".png", ".jpeg")):
+        fondo_path = os.path.join("assets", f)
+        break
+
+# Si no hay fondo específico, usamos una ruta genérica o un color sólido elegante
+css_fondo = f"""
+    .stApp {{
+        background-image: linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.88)), 
+                          url("{fondo_path.replace(os.sep, '/')}" if fondo_path else "https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=1920&auto=format&fit=crop");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
-    }
-    .card-box {
+    }}
+"""
+
+# --- ESTILOS CSS PERSONALIZADOS ---
+st.markdown(f"""
+    <style>
+    {css_fondo}
+    .card-box {{
         background-color: #ffffff;
         padding: 20px;
         border-radius: 12px;
@@ -56,9 +78,8 @@ if "modulo_activo" not in st.session_state:
 # --- BARRA LATERAL (SIDEBAR) ---
 st.sidebar.title(f"👤 {st.session_state.usuario_actual}")
 
-IMG_LOGO = "assets/logo.png" if os.path.exists("assets/logo.png") else None
-if IMG_LOGO:
-    st.sidebar.image(IMG_LOGO, use_container_width=True)
+if logo_path and os.path.exists(logo_path):
+    st.sidebar.image(logo_path, use_container_width=True)
 
 st.sidebar.markdown("---")
 st.sidebar.markdown(f"**Contacto / Pagos:**\n`3125046952`")
@@ -138,7 +159,6 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
         st.markdown("Por favor ingrese la contraseña de acceso exclusivo para el entrenador:")
         pass_ingresada = st.text_input("Contraseña de Acceso", type="password")
         if st.button("Ingresar como Entrenador"):
-            # Contraseña por defecto del coach (puedes cambiarla aquí si deseas)
             if pass_ingresada == "jinsei2026" or pass_ingresada == "coach123":
                 st.session_state.autenticado_coach = True
                 st.session_state.usuario_actual = "Entrenador Victor"
@@ -156,10 +176,8 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
             "📈 Macroestructura"
         ])
         
-        # PESTAÑA 1: INSCRIPCIÓN Y BORRADO MANUAL DE DEPORTISTAS
         with tab_inscripcion:
             st.subheader("Inscripción y Control Manual de Deportistas")
-            
             df_deps = pd.read_csv(CSV_DEPORTISTAS)
             
             with st.form("form_nuevo_deportista"):
@@ -173,11 +191,10 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
                     cat_dep = st.selectbox("Categoría", ["Infantil", "Cadete", "Junior", "Sub-21", "Senior", "Máster"])
                     tel_dep = st.text_input("Teléfono de Contacto")
                 
-                btn_registrar = st.form_submit_button("Registrar Deportista en el Sistema")
-                if btn_registrar:
+                if st.form_submit_button("Registrar Deportista en el Sistema"):
                     if doc_dep and nombre_dep:
                         if str(doc_dep) in df_deps["Documento"].astype(str).values:
-                            st.warning("Ya existe un deportista registrado con ese número de documento.")
+                            st.warning("Ya existe un deportista registrado con ese documento.")
                         else:
                             nuevo_reg = pd.DataFrame([[doc_dep, nombre_dep, cat_dep, edad_dep, tel_dep]], 
                                                      columns=["Documento", "Nombre Completo", "Categoría", "Edad", "Telefono"])
@@ -186,27 +203,24 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
                             st.success(f"¡Deportista {nombre_dep} inscrito correctamente!")
                             st.rerun()
                     else:
-                        st.error("Por favor complete al menos el documento y el nombre.")
+                        st.error("Complete documento y nombre.")
             
             st.markdown("---")
             st.subheader("Listado y Eliminación Manual de Deportistas")
             if not df_deps.empty:
                 st.dataframe(df_deps, use_container_width=True)
-                
                 dep_a_borrar = st.selectbox("Seleccione deportista a eliminar:", df_deps["Nombre Completo"].tolist(), key="sel_dep_borrar")
                 if st.button("❌ Eliminar Deportista Seleccionado"):
                     df_deps = df_deps[df_deps["Nombre Completo"] != dep_a_borrar]
                     df_deps.to_csv(CSV_DEPORTISTAS, index=False)
-                    st.success(f"Deportista {dep_a_borrar} eliminado del sistema.")
+                    st.success(f"Deportista {dep_a_borrar} eliminado.")
                     st.rerun()
             else:
-                st.info("No hay deportistas inscritos actualmente.")
+                st.info("No hay deportistas inscritos.")
 
-        # PESTAÑA 2: ARCHIVOS Y EXONERACIONES (SUBIR Y BORRAR)
         with tab_archivos:
             st.subheader("Gestión de Exoneraciones y Documentos PDF")
             sub_t1, sub_t2 = st.tabs(["Subir Documento PDF", "Eliminar Documento PDF"])
-            
             with sub_t1:
                 with st.form("form_coach_pdf"):
                     nom_atleta = st.text_input("Nombre del Deportista / Archivo")
@@ -217,25 +231,18 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
                             with open(path_pdf, "wb") as f:
                                 f.write(pdf_file.getbuffer())
                             st.success(f"Documento de {nom_atleta} subido con éxito.")
-                        else:
-                            st.error("Complete los datos requeridos.")
-            
             with sub_t2:
                 pdfs_disp = [f for f in os.listdir(EXONERACIONES_DIR) if f.lower().endswith(".pdf")]
                 if pdfs_disp:
                     pdf_del = st.selectbox("Seleccione PDF a eliminar:", pdfs_disp)
                     if st.button("❌ Borrar PDF Seleccionado"):
                         os.remove(os.path.join(EXONERACIONES_DIR, pdf_del))
-                        st.success(f"Documento '{pdf_del}' eliminado.")
+                        st.success("Documento eliminado.")
                         st.rerun()
-                else:
-                    st.info("No hay documentos PDF registrados.")
 
-        # PESTAÑA 3: MULTIMEDIA (FOTOS Y VIDEOS - SUBIR Y BORRAR)
         with tab_multimedia:
             st.subheader("Administración de Galería (Fotos y Videos)")
             m_col1, m_col2 = st.columns(2)
-            
             with m_col1:
                 st.markdown("### 📸 Fotografías")
                 foto_sub = st.file_uploader("Subir Foto", type=["jpg", "png", "jpeg"], key="coach_foto")
@@ -243,7 +250,6 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
                     with open(os.path.join(FOTOS_DIR, foto_sub.name), "wb") as f:
                         f.write(foto_sub.getbuffer())
                     st.success("¡Foto guardada!")
-                
                 fotos_lst = [f for f in os.listdir(FOTOS_DIR) if f.lower().endswith((".jpg", ".png", ".jpeg"))]
                 if fotos_lst:
                     f_del = st.selectbox("Eliminar foto:", fotos_lst, key="del_f_coach")
@@ -251,7 +257,6 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
                         os.remove(os.path.join(FOTOS_DIR, f_del))
                         st.success("Foto eliminada.")
                         st.rerun()
-
             with m_col2:
                 st.markdown("### 🎥 Videos")
                 vid_sub = st.file_uploader("Subir Video", type=["mp4", "mov"], key="coach_vid")
@@ -259,7 +264,6 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
                     with open(os.path.join(VIDEOS_DIR, vid_sub.name), "wb") as f:
                         f.write(vid_sub.getbuffer())
                     st.success("¡Video guardado!")
-                
                 vids_lst = [f for f in os.listdir(VIDEOS_DIR) if f.lower().endswith((".mp4", ".mov"))]
                 if vids_lst:
                     v_del = st.selectbox("Eliminar video:", vids_lst, key="del_v_coach")
@@ -268,86 +272,59 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
                         st.success("Video eliminado.")
                         st.rerun()
 
-        # PESTAÑA 4: MACROESTRUCTURA DE ENTRENAMIENTO
         with tab_macro:
             st.subheader("📈 Planificación y Macroestructura Deportiva")
-            st.markdown("Sube y administra los archivos de planificación de entrenamiento (TRM / Macroestructuras).")
-            
-            macro_sub = st.file_uploader("Subir Archivo de Macroestructura (PDF / Excel / Word)", type=["pdf", "xlsx", "xls", "docx", "csv"])
+            macro_sub = st.file_uploader("Subir Archivo de Macroestructura", type=["pdf", "xlsx", "xls", "docx", "csv"])
             if macro_sub:
                 path_macro = os.path.join(MACRO_DIR, macro_sub.name)
                 with open(path_macro, "wb") as f:
                     f.write(macro_sub.getbuffer())
-                st.success(f"Archivo de macroestructura '{macro_sub.name}' guardado con éxito.")
-            
+                st.success("Archivo de macroestructura guardado.")
             archivos_macro = os.listdir(MACRO_DIR)
             if archivos_macro:
-                st.markdown("### Archivos de Macroestructura Disponibles:")
-                for am in archivos_macro:
-                    st.markdown(f"- 📄 {am}")
-                
                 macro_del = st.selectbox("Seleccione archivo a eliminar:", archivos_macro)
                 if st.button("❌ Eliminar Archivo de Macroestructura"):
                     os.remove(os.path.join(MACRO_DIR, macro_del))
                     st.success("Archivo eliminado.")
                     st.rerun()
-            else:
-                st.info("No hay planes de macroestructura cargados.")
 
-# 3. FICHA INTEGRAL Y EXONERACIONES (Público / Consulta)
+# 3. MÓDULOS DE CONSULTA Y PÚBLICOS
 elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
     if st.button("⬅️ Volver al Panel Principal"):
         st.session_state.modulo_activo = "Panel Principal"
         st.rerun()
-        
     st.header("Carta de Exoneración y Documentos PDF")
     if os.path.exists(EXONERACIONES_DIR):
-        docs = [f for f in os.listdir(EXONERACIONES_DIR) if f.lower().endswith(".pdf")]
-        if docs:
-            for d in docs:
-                st.markdown(f"- 📄 {d}")
-        else:
-            st.info("No hay documentos guardados.")
+        for d in [f for f in os.listdir(EXONERACIONES_DIR) if f.lower().endswith(".pdf")]:
+            st.markdown(f"- 📄 {d}")
 
-# 4. GALERÍA Y VIDEOS (MULTIMEDIA)
 elif st.session_state.modulo_activo == "Galeria y Videos (Multimedia)":
     if st.button("⬅️ Volver al Panel Principal"):
         st.session_state.modulo_activo = "Panel Principal"
         st.rerun()
-        
     st.header("🖼️ Galería y Videos - Jinsei Taekwondo Tenjo")
     tab_f, tab_v = st.tabs(["Fotografías", "Videos"])
     with tab_f:
         if os.path.exists(FOTOS_DIR):
-            for foto in os.listdir(FOTOS_DIR):
-                if foto.lower().endswith((".jpg", ".png", ".jpeg")):
-                    st.image(os.path.join(FOTOS_DIR, foto), caption=foto, use_container_width=True)
+            for foto in [f for f in os.listdir(FOTOS_DIR) if f.lower().endswith((".jpg", ".png", ".jpeg"))]:
+                st.image(os.path.join(FOTOS_DIR, foto), caption=foto, use_container_width=True)
     with tab_v:
         if os.path.exists(VIDEOS_DIR):
-            for vid in os.listdir(VIDEOS_DIR):
-                if vid.lower().endswith((".mp4", ".mov")):
-                    st.video(os.path.join(VIDEOS_DIR, vid))
+            for vid in [f for f in os.listdir(VIDEOS_DIR) if f.lower().endswith((".mp4", ".mov"))]:
+                st.video(os.path.join(VIDEOS_DIR, vid))
 
-# 5. MACROESTRUCTURA DE ENTRENAMIENTO (Vista general)
 elif st.session_state.modulo_activo == "Macroestructura de Entrenamiento":
     if st.button("⬅️ Volver al Panel Principal"):
         st.session_state.modulo_activo = "Panel Principal"
         st.rerun()
-        
     st.header("📈 Macroestructura del Club")
-    st.markdown("Visualización de planes de entrenamiento metodológico.")
     if os.path.exists(MACRO_DIR):
-        m_files = os.listdir(MACRO_DIR)
-        if m_files:
-            for mf in m_files:
-                st.markdown(f"- 📋 {mf}")
-        else:
-            st.info("No hay planes de macroestructura publicados.")
+        for mf in os.listdir(MACRO_DIR):
+            st.markdown(f"- 📋 {mf}")
 
-# 6. RESTO DE MÓDULOS
 else:
     if st.button("⬅️ Volver al Panel Principal"):
         st.session_state.modulo_activo = "Panel Principal"
         st.rerun()
     st.header(f"Módulo: {st.session_state.modulo_activo}")
-    st.info("Sección activa para el club.")
+    st.info("Sección activa.")
