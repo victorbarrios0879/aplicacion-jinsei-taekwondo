@@ -588,23 +588,26 @@ if len(reader) > 1:
                                 writer.writerow([str(fecha_asistencia), nombre, "Presente" if estado else "Ausente"])
                         st.success("¡Asistencia registrada correctamente!")
 if len(reader) > 1:
+if len(reader) > 1:
             nombres = [row[0] for row in reader[1:]]
             with st.form("form_asistencia"):
                 st.subheader(f"Lista de Asistencia - {fecha_asistencia.strftime('%d/%m/%Y')}")
                 asistencias_marcadas = {}
- if guardar_asistencia:
-                    file_exists = os.path.exists(ARCHIVO_ASISTENCIAS)
-                    with open(ARCHIVO_ASISTENCIAS, mode="a", newline="", encoding="utf-8") as f:
-                        writer = csv.writer(f)
-                        if not file_exists:
-                            writer.writerow(["Fecha", "Nombre", "Estado"])
-                        for nombre, estado in asistencias_marcadas.items():
-                            writer.writerow([str(fecha_asistencia), nombre, "Presente" if estado else "Ausente"])
-                    st.success("¡Asistencia registrada correctamente!")
-            else:
-                st.info("No hay deportistas registrados para tomar asistencia.")
+                for nombre in nombres:
+                    asistencias_marcadas[nombre] = st.checkbox(f"Presente: {nombre}", value=True)
+                guardar_asistencia = st.form_submit_button("Guardar Asistencia del Día")
+
+            if guardar_asistencia:
+                file_exists = os.path.exists(ARCHIVO_ASISTENCIAS)
+                with open(ARCHIVO_ASISTENCIAS, mode="a", newline="", encoding="utf-8") as f:
+                    writer = csv.writer(f)
+                    if not file_exists:
+                        writer.writerow(["Fecha", "Nombre", "Estado"])
+                    for nombre, estado in asistencias_marcadas.items():
+                        writer.writerow([str(fecha_asistencia), nombre, "Presente" if estado else "Ausente"])
+                st.success("¡Asistencia registrada correctamente!")
         else:
-            st.info("Aún no existe una base de datos de deportistas.")
+            st.info("No hay deportistas registrados para tomar asistencia.")
 if os.path.exists(ARCHIVO_ASISTENCIAS):
     with open(ARCHIVO_ASISTENCIAS, mode="r", encoding="utf-8") as f:
         reader = list(csv.reader(f))
