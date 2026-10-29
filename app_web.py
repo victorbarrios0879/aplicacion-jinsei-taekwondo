@@ -416,15 +416,6 @@ elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
     "Agenda de Torneos y Eventos (Cargar/Manual)",
     "Pagos (Alerta)"
 
-
-menu = st.sidebar.selectbox(
-    "Seleccione un módulo:",
-    modulos_lista,
-    index=modulos_lista.index(st.session_state.modulo_activo) if st.session_state.modulo_activo in modulos_lista else 0
-)
-
-st.session_state.modulo_activo = menu
-
 if st.sidebar.button("🚪 Cerrar Sesión"):
     st.session_state.autenticado = False
     st.session_state.usuario_actual = ""
