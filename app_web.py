@@ -275,43 +275,6 @@ with tab1:
             st.rerun()
         else:
             st.error("Usuario o contraseña incorrectos.")
-        with tab2:
-            with st.form("form_registro"):
-                st.subheader("Crear nueva cuenta")
-                nuevo_user = st.text_input("Elija un Nombre de Usuario")
-                nuevo_email = st.text_input("Correo Electrónico")
-                nuevo_pass = st.text_input("Contraseña", type="password")
-                submit_registro = st.form_submit_button("Crear Cuenta")
-                
-                if submit_registro:
-                    if nuevo_user and nuevo_pass and nuevo_email:
-                        exito, mensaje = registrar_nuevo_usuario(nuevo_user, nuevo_pass, nuevo_email)
-                        if exito:
-                            st.success(mensaje + " Ahora vaya a la pestaña 'Iniciar Sesión'.")
-                        else:
-                            st.error(mensaje)
-                    else:
-                        st.warning("Por favor complete todos los campos.")
-
-        with tab3:
-            with st.form("form_recuperar"):
-                st.subheader("Recuperar Usuario o Contraseña")
-                st.write("Ingrese el correo electrónico registrado con el que creó su cuenta:")
-                email_recuperar = st.text_input("Correo Electrónico Registrado")
-                submit_recuperar = st.form_submit_button("Enviar Credenciales al Correo")
-                
-                if submit_recuperar:
-                    if email_recuperar:
-                        encontrado, user_rec, pass_rec = recuperar_credenciales(email_recuperar)
-                        if encontrado:
-                            st.success(f"📧 Se ha enviado un mensaje a {email_recuperar} con sus datos de acceso.")
-                            st.info(f"**Usuario:** {user_rec} | **Contraseña:** {pass_rec}")
-                        else:
-                            st.error("No se encontró ninguna cuenta asociada a este correo electrónico.")
-                    else:
-                        st.warning("Por favor ingrese su correo electrónico.")
-    
-    st.stop()
 
 # ----------------- APLICACIÓN PRINCIPAL -----------------
 st.sidebar.title(f"👤 {st.session_state.usuario_actual}")
