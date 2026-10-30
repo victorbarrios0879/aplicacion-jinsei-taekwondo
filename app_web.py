@@ -258,21 +258,27 @@ if not st.session_state.autenticado:
 tab1, tab2, tab3 = st.tabs(["🔑 Iniciar Sesión", "📝 Registrarse", "❓ Recuperar Credenciales"])
 
 with tab1:
-    if os.path.exists("assets/logo.png"):
-        st.image("assets/logo.png", width=120)
-    with st.form("form_login"):
-        st.subheader("Ingrese a su cuenta")
-        usuario_ingreso = st.text_input("Usuario o Correo")
-        password_ingreso = st.text_input("Contraseña", type="password")
-        submit_ingreso = st.form_submit_button("Entrar al Sistema")
-    if submit_ingreso:
-        if verificar_usuario(usuario_ingreso, password_ingreso):
-            st.session_state.autenticado = True
-            st.session_state.usuario_actual = usuario_ingreso
-            st.success("¡Acceso concedido!")
-            st.rerun()
-        else:
-            st.error("Usuario o contraseña incorrectos.")
+    # Creamos columnas para centrar el contenido y hacerlo más angosto
+    _, col_centro, _ = st.columns([1, 2, 1])
+    
+    with col_centro:
+        if os.path.exists("assets/logo.png"):
+            st.image("assets/logo.png", width=120)
+        
+        with st.form("form_login"):
+            st.subheader("Ingrese a su cuenta")
+            usuario_ingreso = st.text_input("Usuario o Correo")
+            password_ingreso = st.text_input("Contraseña", type="password")
+            submit_ingreso = st.form_submit_button("Entrar al Sistema", use_container_width=True)
+
+        if submit_ingreso:
+            if verificar_usuario(usuario_ingreso, password_ingreso):
+                st.session_state.autenticado = True
+                st.session_state.usuario_actual = usuario_ingreso
+                st.success("¡Acceso concedido!")
+                st.rerun()
+            else:
+                st.error("Usuario o contraseña incorrectos.")
 
 # ----------------- APLICACIÓN PRINCIPAL -----------------
 st.sidebar.title(f"👤 {st.session_state.usuario_actual}")
