@@ -86,7 +86,6 @@ def recuperar_credenciales(email_consulta):
                 if len(row) >= 3 and row[2].strip().lower() == email_consulta.strip().lower():
                     return True, row[0], row[1]
     return False, None, None
-
 # ESTILOS E IMAGEN DE FONDO
 def aplicar_estilos_fondo():
     foto_bg_path = ASSETS_DIR / "foto.JPG"
@@ -95,27 +94,32 @@ def aplicar_estilos_fondo():
         with open(foto_bg_path, "rb") as f:
             encoded = base64.b64encode(f.read()).decode()
             
-    css = f"""
+    css = """
     <style>
-    .stApp {{
-        background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url("data:image/jpeg;base64,{encoded}");
+    .stApp {
+        background-color: #f5f5f5;
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
-    }}
-    .card-servicio {{
+    }
+    .card-servicio {
         border-radius: 12px;
         padding: 18px;
         margin-bottom: 12px;
         color: white;
         font-weight: bold;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    }}
-    .bg-azul {{ background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%); }}
-    .bg-verde {{ background: linear-gradient(135deg, #15803D 0%, #22C55E 100%); }}
-    .bg-rojo {{ background: linear-gradient(135deg, #B91C1C 0%, #EF4444 100%); }}
-    .bg-amarillo {{ background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%); color: #1E293B; }}
+    }
+    .bg-azul { background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%); }
+    .bg-verde { background: linear-gradient(135deg, #15803D 0%, #22C55E 100%); }
+    .bg-rojo { background: linear-gradient(135deg, #B91C1C 0%, #EF4444 100%); }
+    .bg-amarillo { background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%); color: #1E293B; }
     
-    .card-title-custom {{ font-size: 18px; font-weight: bold; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }}
-    .card-desc-custom {{ font-size: 13px; opacity: 0.95; font-weight: normal; }}
-    .
+    .card-title-custom { font-size: 18px; font-weight: bold; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .card-desc-custom { font-size: 13px; opacity: 0.95; font-weight: normal; }
+    .badge-icon { padding: 4px 10px; border-radius: 20px; font-size: 12px; background: #1E3A8A; color: white; margin-right: 6px; }
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
+
+aplicar_estilos_fondo()
