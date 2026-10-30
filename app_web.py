@@ -347,12 +347,12 @@ else:
         st.sidebar.info("Jinsei Taekwondo — Tenjo")
     # Definir IMG_LOGO por seguridad si no existe
     # Cargar el logo oficial directamente desde la carpeta assets en la barra lateral
-    st.sidebar.image("logo.png", use_container_width=True)
+ st.sidebar.image("logo.png", use_container_width=True)
     # Botón rápido de contacto en la barra lateral
-    st.sidebar.markdown(f"📱 **Contacto / Pagos:**\n`{NUMERO_PAGOS_DIGITALES}`")
-    st.sidebar.markdown("---")
+st.sidebar.markdown(f"📱 **Contacto / Pagos:**\n`{NUMERO_PAGOS_DIGITALES}`")
+st.sidebar.markdown("---")
 
-    modulos_lista = [
+modulos_lista = [
         "Panel Principal",
         "Ficha Integral del Deportista e IMC",
         "Control de Asistencia",
