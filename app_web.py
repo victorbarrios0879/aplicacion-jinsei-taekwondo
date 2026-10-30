@@ -255,7 +255,7 @@ if not st.session_state.autenticado:
             </div>
         """
         st.markdown(html_header_login, unsafe_allow_html=True)
-  tab1, tab2, tab3 = st.tabs(["🔑 Iniciar Sesión", "📝 Registrarse", "❓ Recuperar Credenciales"])
+tab1, tab2, tab3 = st.tabs(["🔑 Iniciar Sesión", "📝 Registrarse", "❓ Recuperar Credenciales"])
 
 with tab1:
     if os.path.exists("assets/logo.png"):
