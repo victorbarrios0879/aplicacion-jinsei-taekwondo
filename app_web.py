@@ -331,46 +331,46 @@ else:
     # ========================================================
     # VISTA PRIVADA: PANEL PRINCIPAL Y MÓDULOS DEL CLUB
     # ========================================================
-            # Barra lateral de control de sesión
-            st.sidebar.title(f"👤 {st.session_state.get('usuario_actual', 'Coach')}")
-            if st.sidebar.button("Cerrar Sesión"):
-                st.session_state.autenticado = False
-                st.rerun()
+                # Barra lateral de control de sesión
+                st.sidebar.title(f"👤 {st.session_state.get('usuario_actual', 'Coach')}")
+                if st.sidebar.button("Cerrar Sesión"):
+                    st.session_state.autenticado = False
+                    st.rerun()
 
-            # Todo el contenido de tus módulos de trabajo va aquí adentro:
-            st.markdown("## ⚡ Acceso Rápido a Módulos de Trabajo")
-            # ... (Tus tarjetas, fichas, asistencia, etc.)
+                # Todo el contenido de tus módulos de trabajo va aquí adentro:
+                st.markdown("## ⚡ Acceso Rápido a Módulos de Trabajo")
+                # ... (Tus tarjetas, fichas, asistencia, etc.)
 
 
-        # ----------------- APLICACIÓN PRINCIPAL -----------------
+            # ----------------- APLICACIÓN PRINCIPAL -----------------
 
-     st.sidebar.info("Jinsei Taekwondo — Tenjo")
-    # Definir IMG_LOGO por seguridad si no existe
-    # Cargar el logo oficial directamente desde la carpeta assets en la barra lateral
-    st.sidebar.image("logo.png", use_container_width=True)
-    # Botón rápido de contacto en la barra lateral
-    st.sidebar.markdown(f"📱 **Contacto / Pagos:**\n`{NUMERO_PAGOS_DIGITALES}`")
-    st.sidebar.markdown("---")
+        st.sidebar.info("Jinsei Taekwondo — Tenjo")
+        # Definir IMG_LOGO por seguridad si no existe
+        # Cargar el logo oficial directamente desde la carpeta assets en la barra lateral
+        st.sidebar.image("logo.png", use_container_width=True)
+        # Botón rápido de contacto en la barra lateral
+        st.sidebar.markdown(f"📱 **Contacto / Pagos:**\n`{NUMERO_PAGOS_DIGITALES}`")
+        st.sidebar.markdown("---")
 
-    modulos_lista = [
-            "Panel Principal",
-            "Ficha Integral del Deportista e IMC",
-            "Control de Asistencia",
-            "Panel General del Entrenador (Solo Coach)",
-            "Galeria y Videos (Multimedia)",
-            "Cargar Fichas, Exoneraciones y PDFs",
-            "Agenda de Torneos y Eventos",
-            "Pagos (Alerta)"
-        ]
+        modulos_lista = [
+                "Panel Principal",
+                "Ficha Integral del Deportista e IMC",
+                "Control de Asistencia",
+                "Panel General del Entrenador (Solo Coach)",
+                "Galeria y Videos (Multimedia)",
+                "Cargar Fichas, Exoneraciones y PDFs",
+                "Agenda de Torneos y Eventos",
+                "Pagos (Alerta)"
+            ]
 
-        # Selector de navegación en la barra lateral
-        try:
-            index_actual = modulos_lista.index(st.session_state.modulo_activo)
-        except ValueError:
-            index_actual = 0
+            # Selector de navegación en la barra lateral
+            try:
+                index_actual = modulos_lista.index(st.session_state.modulo_activo)
+            except ValueError:
+                index_actual = 0
 
-        modulo_seleccionado = st.sidebar.selectbox("Seleccione un módulo:", modulos_lista, index=index_actual, key="menu_lateral_principal")
-        st.session_state.modulo_activo = modulo_seleccionado
+            modulo_seleccionado = st.sidebar.selectbox("Seleccione un módulo:", modulos_lista, index=index_actual, key="menu_lateral_principal")
+            st.session_state.modulo_activo = modulo_seleccionado
 
         # --- CUERPO PRINCIPAL ---
         if st.session_state.modulo_activo == "Panel Principal":
