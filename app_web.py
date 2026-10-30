@@ -343,7 +343,7 @@ else:
 
 
     # ----------------- APLICACIÓN PRINCIPAL -----------------
-    if st.session_state.get("autenticado", False):
+  if st.session_state.get("autenticado", False):
         st.sidebar.title(f"👤 {st.session_state.get('usuario_actual', 'Coach')}")
     else:
         st.sidebar.info("Jinsei Taekwondo — Tenjo")
