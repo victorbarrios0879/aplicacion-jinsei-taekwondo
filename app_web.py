@@ -348,14 +348,14 @@ st.sidebar.markdown("---")
     # VISTA PRIVADA: PANEL PRINCIPAL Y MÓDULOS DEL CLUB
     # ========================================================
                 # Barra lateral de control de sesión
-                st.sidebar.title(f"👤 {st.session_state.get('usuario_actual', 'Coach')}")
-                if st.sidebar.button("Cerrar Sesión"):
-                    st.session_state.autenticado = False
-                    st.rerun()
+ st.sidebar.title(f"👤 {st.session_state.get('usuario_actual', 'Coach')}")
+if st.sidebar.button("Cerrar Sesión"):
+st.session_state.autenticado = False
+ st.rerun()
 
-                # Todo el contenido de tus módulos de trabajo va aquí adentro:
-                st.markdown("## ⚡ Acceso Rápido a Módulos de Trabajo")
-                # ... (Tus tarjetas, fichas, asistencia, etc.)
+ # Todo el contenido de tus módulos de trabajo va aquí adentro:
+st.markdown("## ⚡ Acceso Rápido a Módulos de Trabajo")
+ # ... (Tus tarjetas, fichas, asistencia, etc.)
 
 
             # ----------------- APLICACIÓN PRINCIPAL -----------------
