@@ -327,7 +327,23 @@ if not st.session_state.autenticado:
                 correo_recuperar = st.text_input("Ingrese su correo registrado")
                 submit_recuperar = st.form_submit_button("Enviar Solicitud", use_container_width=True)
 
-else:
+# --- CONTROL DE ACCESO ---
+if not st.session_state.get("autenticado", False):
+    st.stop()
+
+# ========================================================
+# VISTA PRIVADA: PANEL PRINCIPAL Y MÓDULOS DEL CLUB
+# ========================================================
+# (Todo este bloque de aquí para abajo va SIN tabulaciones extra, pegado a la izquierda)
+st.sidebar.title(f"👤 {st.session_state.get('usuario_actual', 'Coach')}")
+if st.sidebar.button("Cerrar Sesión"):
+    st.session_state.autenticado = False
+    st.rerun()
+
+st.sidebar.info("Jinsei Taekwondo – Tenjo")
+st.sidebar.image("logo.png", use_container_width=True)
+st.sidebar.markdown(f"**Contacto / Pagos:**\n{NUMERO_PAGOS_DIGITALES}")
+st.sidebar.markdown("---")
     # ========================================================
     # VISTA PRIVADA: PANEL PRINCIPAL Y MÓDULOS DEL CLUB
     # ========================================================
