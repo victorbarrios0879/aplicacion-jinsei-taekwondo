@@ -84,34 +84,44 @@ def recuperar_credenciales(email_consulta):
                     return True, row[0], row[1]
     return False, None, None
 
-# Estilos limpios sin comillas conflictivas
-css = """
-<style>
-.stApp {
-    background-color: #f5f5f5;
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-}
-.card-servicio {
-    border-radius: 12px;
-    padding: 18px;
-    margin-bottom: 12px;
-    color: white;
-    font-weight: bold;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-}
-.bg-azul { background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%); }
-.bg-verde { background: linear-gradient(135deg, #15803D 0%, #22C55E 100%); }
-.bg-rojo { background: linear-gradient(135deg, #B91C1C 0%, #EF4444 100%); }
-.bg-amarillo { background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%); color: #1E293B; }
-.card-title-custom { font-size: 18px; font-weight: bold; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-.card-desc-custom { font-size: 13px; opacity: 0.95; font-weight: normal; }
-.badge-icon { padding: 4px 10px; border-radius: 20px; font-size: 12px; background: #1E3A8A; color: white; margin-right: 6px; }
-</style>
-"""
-st.markdown(css, unsafe_allow_html=True)
+# ESTILOS INSTITUCIONALES Y FONDO CON FOTO DE DEPORTISTAS
+def aplicar_estilos_institucionales():
+    foto_bg_path = ASSETS_DIR / "foto.JPG"
+    encoded_bg = ""
+    if os.path.exists(foto_bg_path):
+        with open(foto_bg_path, "rb") as f:
+            encoded_bg = base64.b64encode(f.read()).decode()
+            
+    css = f"""
+    <style>
+    .stApp {{
+        background-image: linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.88)), url("data:image/jpeg;base64,{encoded_bg}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }}
+    .card-servicio {{
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 12px;
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }}
+    .bg-azul {{ background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%); }}
+    .bg-verde {{ background: linear-gradient(135deg, #15803D 0%, #22C55E 100%); }}
+    .bg-rojo {{ background: linear-gradient(135deg, #B91C1C 0%, #EF4444 100%); }}
+    .bg-amarillo {{ background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%); color: #1E293B; }}
+    .card-title-custom {{ font-size: 18px; font-weight: bold; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }}
+    .card-desc-custom {{ font-size: 13px; opacity: 0.95; font-weight: normal; }}
+    .badge-icon {{ padding: 4px 10px; border-radius: 20px; font-size: 12px; background: #1E3A8A; color: white; margin-right: 6px; }}
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
 
+aplicar_estilos_institucionales()
+
+# ----------------- AUTENTICACIÓN Y LOGIN -----------------
 if not st.session_state.autenticado:
     _, col_principal, _ = st.columns([1, 2.5, 1])
 
@@ -180,7 +190,7 @@ if not st.session_state.autenticado:
 
     st.stop()
 
-# VISTA PRIVADA
+# ----------------- PANEL PRIVADO Y NAVEGACIÓN -----------------
 st.sidebar.title(f"👤 {st.session_state.get('usuario_actual', 'Coach')}")
 
 if st.sidebar.button("🚪 Cerrar Sesión"):
@@ -222,75 +232,192 @@ if st.session_state.modulo_activo != "Panel Principal":
         st.rerun()
     st.markdown("---")
 
+# ----------------- MÓDULOS DE TRABAJO -----------------
+
 if st.session_state.modulo_activo == "Panel Principal":
-    st.title("🥋 Club Jinsei Taekwondo Tenjo")
-    st.markdown("Sistema oficial de gestión deportiva, académica y administrativa.")
-    st.markdown("---")
+    col_izq, col_der = st.columns([1.2, 2.8])
     
-    st.subheader("⚡ Acceso Rápido a Módulos de Trabajo")
-    c_mod1, c_mod2 = st.columns(2)
+    with col_izq:
+        st.subheader("🏛️ Servicios del Club")
+        with st.expander("🥋 1. TAEKWONDO"):
+            st.write("Formación deportiva y marcial para niños, jóvenes y adultos, enfocada en disciplina, respeto, técnica, autocontrol y desarrollo integral.")
+        with st.expander("🏃 2. ENTRENAMIENTO FUNCIONAL"):
+            st.write("Acondicionamiento físico, desarrollo de fuerza, resistencia, coordinación, flexibilidad y capacidades físicas.")
+        with st.expander("🛡️ 3. DEFENSA PERSONAL"):
+            st.write("Formación en técnicas de prevención, seguridad personal, reacción y defensa ante situaciones de riesgo.")
+        
+        st.markdown("---")
+        st.info("📍 **Sede:** Tenjo, Cundinamarca — Vereda Chincé, Sector Zoque\n📞 **WhatsApp:** " + TELEFONO_CLUB)
 
-    with c_mod1:
-        st.markdown('''
-            <div class="card-servicio bg-azul">
-                <div class="card-title-custom"><span class="badge-icon">01</span> Ficha Integral e IMC</div>
-                <div class="card-desc-custom">Registro completo de datos de deportistas, EPS y cálculo nutricional.</div>
-            </div>
-        ''', unsafe_allow_html=True)
-        if st.button("📁 Abrir Ficha e IMC", use_container_width=True, key="btn_m1"):
-            st.session_state.modulo_activo = "Ficha Integral del Deportista e IMC"
-            st.rerun()
+    with col_der:
+        st.title("🥋 Club Jinsei Taekwondo Tenjo")
+        st.markdown("Sistema oficial de gestión deportiva, académica y administrativa.")
+        st.markdown("---")
+        
+        st.subheader("⚡ Acceso Rápido a Módulos de Trabajo")
+        c_mod1, c_mod2 = st.columns(2)
 
-        st.markdown('''
-            <div class="card-servicio bg-rojo">
-                <div class="card-title-custom"><span class="badge-icon">03</span> Galería y Videos (Multimedia)</div>
-                <div class="card-desc-custom">Fotografías, eventos institucionales y videoteca técnica del club.</div>
-            </div>
-        ''', unsafe_allow_html=True)
-        if st.button("📸 Abrir Multimedia", use_container_width=True, key="btn_m3"):
-            st.session_state.modulo_activo = "Galería y Videos (Multimedia)"
-            st.rerun()
+        with c_mod1:
+            st.markdown('''
+                <div class="card-servicio bg-azul">
+                    <div class="card-title-custom"><span class="badge-icon">01</span> Ficha Integral e IMC</div>
+                    <div class="card-desc-custom">Registro completo de datos de deportistas, EPS y cálculo nutricional.</div>
+                </div>
+            ''', unsafe_allow_html=True)
+            if st.button("📁 Abrir Ficha e IMC", use_container_width=True, key="btn_m1"):
+                st.session_state.modulo_activo = "Ficha Integral del Deportista e IMC"
+                st.rerun()
 
-        st.markdown('''
-            <div class="card-servicio bg-verde">
-                <div class="card-title-custom"><span class="badge-icon">05</span> Control de Asistencia</div>
-                <div class="card-desc-custom">Registro diario por sesión y consulta de historial de deportistas.</div>
-            </div>
-        ''', unsafe_allow_html=True)
-        if st.button("📊 Abrir Asistencia", use_container_width=True, key="btn_m5"):
-            st.session_state.modulo_activo = "Control de Asistencia"
-            st.rerun()
+            st.markdown('''
+                <div class="card-servicio bg-rojo">
+                    <div class="card-title-custom"><span class="badge-icon">03</span> Galería y Videos (Multimedia)</div>
+                    <div class="card-desc-custom">Fotografías, eventos institucionales y videoteca técnica del club.</div>
+                </div>
+            ''', unsafe_allow_html=True)
+            if st.button("📸 Abrir Multimedia", use_container_width=True, key="btn_m3"):
+                st.session_state.modulo_activo = "Galería y Videos (Multimedia)"
+                st.rerun()
 
-    with c_mod2:
-        st.markdown('''
-            <div class="card-servicio bg-verde">
-                <div class="card-title-custom"><span class="badge-icon">02</span> Panel General del Entrenador</div>
-                <div class="card-desc-custom">Centro administrativo: gestión de deportistas, macroestructura y borrado.</div>
-            </div>
-        ''', unsafe_allow_html=True)
-        if st.button("🥋 Abrir Panel Coach", use_container_width=True, key="btn_m2"):
-            st.session_state.modulo_activo = "Panel General del Entrenador (Solo Coach)"
-            st.rerun()
+            st.markdown('''
+                <div class="card-servicio bg-verde">
+                    <div class="card-title-custom"><span class="badge-icon">05</span> Control de Asistencia</div>
+                    <div class="card-desc-custom">Calendario interactivo de asistencia diaria por sesión.</div>
+                </div>
+            ''', unsafe_allow_html=True)
+            if st.button("📊 Abrir Asistencia", use_container_width=True, key="btn_m5"):
+                st.session_state.modulo_activo = "Control de Asistencia"
+                st.rerun()
 
-        st.markdown('''
-            <div class="card-servicio bg-amarillo">
-                <div class="card-title-custom"><span class="badge-icon">04</span> Exoneraciones y PDFs</div>
-                <div class="card-desc-custom">Gestión y borrado de cartas de deslinde de responsabilidad legal.</div>
-            </div>
-        ''', unsafe_allow_html=True)
-        if st.button("📄 Abrir Exoneraciones", use_container_width=True, key="btn_m6"):
-            st.session_state.modulo_activo = "Cargar Fichas, Exoneraciones y PDFs"
-            st.rerun()
+        with c_mod2:
+            st.markdown('''
+                <div class="card-servicio bg-verde">
+                    <div class="card-title-custom"><span class="badge-icon">02</span> Panel del Entrenador</div>
+                    <div class="card-desc-custom">Gestión completa de atletas, macroestructuras y documentos.</div>
+                </div>
+            ''', unsafe_allow_html=True)
+            if st.button("🥋 Abrir Panel Coach", use_container_width=True, key="btn_m2"):
+                st.session_state.modulo_activo = "Panel General del Entrenador (Solo Coach)"
+                st.rerun()
 
-        st.markdown('''
-            <div class="card-servicio bg-azul">
-                <div class="card-title-custom"><span class="badge-icon">06</span> Control de Pagos</div>
-                <div class="card-desc-custom">Estado de mensualidades, recibos oficiales y alertas de pagos.</div>
-            </div>
-        ''', unsafe_allow_html=True)
-        if st.button("💰 Abrir Pagos", use_container_width=True, key="btn_m8"):
-            st.session_state.modulo_activo = "Pagos (Alerta)"
-            st.rerun()
+            st.markdown('''
+                <div class="card-servicio bg-amarillo">
+                    <div class="card-title-custom"><span class="badge-icon">04</span> Exoneraciones y PDFs</div>
+                    <div class="card-desc-custom">Gestión y borrado de cartas de deslinde de responsabilidad legal.</div>
+                </div>
+            ''', unsafe_allow_html=True)
+            if st.button("📄 Abrir Exoneraciones", use_container_width=True, key="btn_m6"):
+                st.session_state.modulo_activo = "Cargar Fichas, Exoneraciones y PDFs"
+                st.rerun()
+
+            st.markdown('''
+                <div class="card-servicio bg-azul">
+                    <div class="card-title-custom"><span class="badge-icon">06</span> Control de Pagos</div>
+                    <div class="card-desc-custom">Estado de mensualidades, recibos oficiales y alertas de pagos.</div>
+                </div>
+            ''', unsafe_allow_html=True)
+            if st.button("💰 Abrir Pagos", use_container_width=True, key="btn_m8"):
+                st.session_state.modulo_activo = "Pagos (Alerta)"
+                st.rerun()
+
+elif st.session_state.modulo_activo == "Ficha Integral del Deportista e IMC":
+    st.header("📋 Ficha Integral del Deportista y Cálculo de IMC")
+    tab_reg_i, tab_cons_i = st.tabs(["Registrar / Actualizar Deportista", "Consultar Historial e IMC"])
+    
+    with tab_reg_i:
+        with st.form("form_ficha_integral"):
+            nombre_dep = st.text_input("Nombre Completo del Deportista")
+            doc_dep = st.text_input("Documento de Identidad")
+            edad_dep = st.number_input("Edad", min_value=3, max_value=99, value=15)
+            eps_dep = st.text_input("EPS / Seguro Médico")
+            peso_dep = st.number_input("Peso Actual (kg)", min_value=10.0, max_value=200.0, value=60.0)
+            est_dep = st.number_input("Estatura Actual (m)", min_value=0.5, max_value=2.5, value=1.70)
+            grado_dep = st.selectbox("Grado / Cinturón", ["Blanco (10° Kup)", "Amarillo (8° Kup)", "Verde (6° Kup)", "Azul (4° Kup)", "Rojo (2° Kup)", "Negro (1° Dan)"])
+            contacto_dep = st.text_input("Teléfono de Contacto / Acudiente")
+            
+            submit_ficha = st.form_submit_button("Guardar o Actualizar Ficha e IMC")
+            if submit_ficha:
+                if nombre_dep and doc_dep:
+                    imc = peso_dep / (est_dep ** 2)
+                    clasificacion_imc = "Bajo peso" if imc < 18.5 else ("Normal" if imc < 25 else ("Sobrepeso" if imc < 30 else "Obesidad"))
+                    
+                    registros = []
+                    if os.path.exists(ARCHIVO_DEPORTISTAS):
+                        with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
+                            registros = list(csv.reader(f))
+                    
+                    header = ["Nombre", "Documento", "Edad", "EPS", "Peso", "Estatura", "IMC", "Clasificacion", "Grado", "Contacto", "Fecha"]
+                    if not registros:
+                        registros = [header]
+                    
+                    actualizado = False
+                    for i in range(1, len(registros)):
+                        if registros[i][1] == doc_dep:
+                            registros[i] = [nombre_dep, doc_dep, str(edad_dep), eps_dep, str(peso_dep), str(est_dep), f"{imc:.2f}", clasificacion_imc, grado_dep, contacto_dep, datetime.now().strftime("%Y-%m-%d")]
+                            actualizado = True
+                            break
+                    if not actualizado:
+                        registros.append([nombre_dep, doc_dep, str(edad_dep), eps_dep, str(peso_dep), str(est_dep), f"{imc:.2f}", clasificacion_imc, grado_dep, contacto_dep, datetime.now().strftime("%Y-%m-%d")])
+                        
+                    with open(ARCHIVO_DEPORTISTAS, mode="w", newline="", encoding="utf-8") as f:
+                        writer = csv.writer(f)
+                        writer.writerows(registros)
+                    st.success(f"¡Ficha de {nombre_dep} guardada con éxito! IMC Calculado: {imc:.2f} ({clasificacion_imc})")
+                else:
+                    st.warning("Por favor ingrese al menos el nombre y el documento.")
+
+    with tab_cons_i:
+        st.subheader("Historial y Consulta de Deportistas e IMC")
+        if os.path.exists(ARCHIVO_DEPORTISTAS):
+            with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
+                data = list(csv.reader(f))
+                if len(data) > 1:
+                    st.table(data)
+                else:
+                    st.info("No hay deportistas registrados.")
+        else:
+            st.info("Aún no hay registros en la base de datos.")
+
+elif st.session_state.modulo_activo == "Control de Asistencia":
+    st.header("📊 Control de Asistencia mediante Calendario")
+    fecha_sesion = st.date_input("Seleccione Fecha de Entrenamiento", value=datetime.now())
+    
+    if os.path.exists(ARCHIVO_DEPORTISTAS):
+        with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
+            reader = list(csv.reader(f))
+            if len(reader) > 1:
+                nombres = [row[0] for row in reader[1:]]
+                with st.form("form_asistencia_cal"):
+                    st.subheader(f"Lista de Asistencia para el día: {fecha_sesion.strftime('%d/%m/%Y')}")
+                    estados = {}
+                    for nom in nombres:
+                        estados[nom] = st.selectbox(f"Atleta: {nom}", ["Presente", "Ausente con Justificación", "Inasistencia Injustificada"], key=f"asist_{nom}")
+                    submit_asist = st.form_submit_button("Guardar Asistencia de la Sesión")
+                    
+                    if submit_asist:
+                        asistencias_previas = []
+                        if os.path.exists(ARCHIVO_ASISTENCIAS):
+                            with open(ARCHIVO_ASISTENCIAS, mode="r", encoding="utf-8") as fa:
+                                asistencias_previas = list(csv.reader(fa))
+                        
+                        header_a = ["Fecha", "Nombre", "Estado"]
+                        if not asistencias_previas:
+                            asistencias_previas = [header_a]
+                        
+                        # Filtrar duplicados para la misma fecha y deportista
+                        nuevas_asistencias = [row for row in asistencias_previas if not (row and row[0] == str(fecha_sesion))]
+                        if len(nuevas_asistencias) == 0:
+                            nuevas_asistencias = [header_a]
+                            
+                        for nom, est in estados.items():
+                            nuevas_asistencias.append([str(fecha_sesion), nom, est])
+                            
+                        with open(ARCHIVO_ASISTENCIAS, mode="w", newline="", encoding="utf-8") as fa:
+                            csv.writer(fa).writerows(nuevas_asistencias)
+                        st.success("¡Asistencia registrada y actualizada correctamente sin duplicados!")
+            else:
+                st.info("No hay deportistas registrados para tomar asistencia.")
+    else:
+        st.info("Debe registrar deportistas primero en la ficha integral.")
 
 elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
     st.header("📄 Carta de Exoneración y Documentos PDF")
@@ -359,10 +486,13 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
                 st.rerun()
                 
         st.markdown("---")
-        st.subheader("🖼️ Fotos Registradas y Eliminar")
+        st.subheader("🖼️ Galería de Fotografías")
         if os.path.exists(FOTOS_CLUB_DIR):
             lista_fotos = [f for f in os.listdir(FOTOS_CLUB_DIR) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
             if lista_fotos:
+                for foto_item in lista_fotos:
+                    st.image(str(FOTOS_CLUB_DIR / foto_item), caption=foto_item, width=300)
+                
                 foto_a_borrar = st.selectbox("Seleccione foto a eliminar:", lista_fotos, key="sel_f_borrar")
                 if st.button("❌ Eliminar Foto Seleccionada", key="btn_del_f_dir"):
                     os.remove(FOTOS_CLUB_DIR / foto_a_borrar)
@@ -382,14 +512,18 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
                 st.rerun()
                 
         st.markdown("---")
-        st.subheader("🎥 Vídeos Registrados y Eliminar")
+        st.subheader("🎥 Videoteca Técnica y Reproducción")
         if os.path.exists(VIDEOS_DIR):
             lista_videos = [f for f in os.listdir(VIDEOS_DIR) if f.lower().endswith(('.mp4', '.mov', '.avi'))]
             if lista_videos:
+                for vid_item in lista_videos:
+                    st.write(f"🎬 **{vid_item}**")
+                    st.video(str(VIDEOS_DIR / vid_item))
+                
                 video_a_borrar = st.selectbox("Seleccione vídeo a eliminar:", lista_videos, key="sel_v_borrar")
                 if st.button("❌ Eliminar Vídeo Seleccionado", key="btn_del_v_dir"):
                     os.remove(VIDEOS_DIR / video_a_borrar)
-                    st.success(f"El vídeo '{video_a_borrar}' ha sido eliminada.")
+                    st.success(f"El vídeo '{video_a_borrar}' ha sido eliminado.")
                     st.rerun()
             else:
                 st.info("No hay vídeos guardados aún.")
@@ -400,9 +534,9 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
     
     if password_coach == CONTRASENA_ENTRENADOR:
         st.success("✅ Acceso Autorizado al Panel de Control.")
-        tab_dep, tab_doc_coach = st.tabs(["📋 Lista y Borrado de Deportistas", "📄 Documentos PDF"])
+        tab_dep_c, tab_mac_c, tab_doc_c = st.tabs(["📋 Lista y Borrado de Deportistas", "📊 Macroestructuras", "📄 Documentos PDF"])
         
-        with tab_dep:
+        with tab_dep_c:
             if os.path.exists(ARCHIVO_DEPORTISTAS):
                 with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
                     data = list(csv.reader(f))
@@ -418,7 +552,41 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
                             st.rerun()
                     else:
                         st.info("No hay deportistas registrados.")
-        with tab_doc_coach:
+                        
+        with tab_mac_c:
+            st.subheader("Carga y Gestión de Macroestructuras de Entrenamiento")
+            with st.form("form_subir_macro"):
+                titulo_mac = st.text_input("Título de la Macroestructura (Ej: Macro Anual 2026)")
+                archivo_mac = st.file_uploader("Subir Archivo (Excel o PDF)", type=["xlsx", "xls", "pdf", "csv"])
+                submit_mac = st.form_submit_button("Subir Macroestructura")
+                
+                if submit_mac:
+                    if titulo_mac and archivo_mac is not None:
+                        ext = archivo_mac.name.split('.')[-1]
+                        ruta_m = MACRO_DIR / f"{titulo_mac.replace(' ', '_').lower()}.{ext}"
+                        with open(ruta_m, "wb") as fm:
+                            fm.write(archivo_mac.getbuffer())
+                        st.success(f"¡Macroestructura '{titulo_mac}' cargada con éxito!")
+                    else:
+                        st.warning("Ingrese un título y adjunte un archivo.")
+                        
+            st.markdown("---")
+            st.subheader("Archivos Cargados y Descarga / Borrado")
+            macros_disponibles = list(MACRO_DIR.glob("*.*"))
+            if macros_disponibles:
+                for mac_item in macros_disponibles:
+                    cm1, cm2 = st.columns([3, 1])
+                    with cm1:
+                        st.write(f"📊 `{mac_item.name}`")
+                    with cm2:
+                        if st.button("🗑️ Borrar", key=f"del_mac_{mac_item.name}"):
+                            mac_item.unlink()
+                            st.success(f"Eliminado: {mac_item.name}")
+                            st.rerun()
+            else:
+                st.info("No hay macroestructuras cargadas.")
+
+        with tab_doc_c:
             st.subheader("Administración de Archivos Exoneración")
             archivos_pdf = list(EXONERACIONES_DIR.glob("*.pdf"))
             if archivos_pdf:
@@ -433,3 +601,130 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
                             st.rerun()
     elif password_coach != "":
         st.error("⚠️ Contraseña incorrecta.")
+
+elif st.session_state.modulo_activo == "Pagos (Alerta)":
+    st.header("💰 Control de Pagos y Recaudos del Club")
+    
+    # Sistema automático de alarma para los primeros 5 días del mes
+    dia_actual = datetime.now().day
+    if dia_actual <= 5:
+        st.warning(f"🚨 **¡AVISO INSTITUCIONAL DE MENSUALIDAD!** Nos encontramos en los primeros 5 días del mes (Día {dia_actual}). Por favor recuerde realizar el pago de su mensualidad a tiempo.")
+
+    st.info(f"""
+    📲 **MEDIOS DE PAGO OFICIALES DISPONIBLES:**
+    * **Nequi:** `{NUMERO_PAGOS_DIGITALES}`
+    * **Daviplata:** `{NUMERO_PAGOS_DIGITALES}`
+    * **Llave / ID de Pago:** `{NUMERO_PAGOS_DIGITALES}`
+    """)
+    st.markdown("---")
+    
+    tab_p_ver, tab_p_reg, tab_p_rec = st.tabs(["📋 Consultar Pagos y Vencidos", "➕ Registrar Pago", "🧾 Generar Recibo Oficial"])
+    
+    with tab_p_ver:
+        if os.path.exists(ARCHIVO_PAGOS):
+            with open(ARCHIVO_PAGOS, mode="r", encoding="utf-8") as f:
+                reader_p = list(csv.reader(f))
+                if len(reader_p) > 1:
+                    for row in reader_p[1:]:
+                        atleta = row[0]
+                        estado = row[1]
+                        fecha = row[2]
+                        valor = row[3] if len(row) > 3 else "$60.000 COP"
+                        if estado == "Pagado / Al Día":
+                            st.success(f"✅ **{atleta}** — Estado: **Pagado** | Fecha: {fecha} | Valor: {valor}")
+                        else:
+                            st.error(f"🚨 **{atleta}** — Estado: **PENDIENTE / VENCIDO**")
+                else:
+                    st.info("No hay registros de pagos cargados.")
+        else:
+            st.info("Aún no hay historial de pagos.")
+
+    with tab_p_reg:
+        if os.path.exists(ARCHIVO_DEPORTISTAS):
+            with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
+                deps = [r[0] for r in list(csv.reader(f))[1:]]
+                if deps:
+                    with st.form("form_reg_pago"):
+                        atleta_sel = st.selectbox("Seleccionar Deportista", deps)
+                        estado_pago = st.selectbox("Estado", ["Pagado / Al Día", "Pendiente / Vencido"])
+                        valor_pago = st.text_input("Valor Cancelado", value="$60.000 COP")
+                        medio_pago = st.selectbox("Medio Utilizado", ["Nequi", "Daviplata", "Llave / Dale", "Efectivo", "Transferencia"])
+                        fecha_pago = st.date_input("Fecha del Pago", value=datetime.now())
+                        submit_p = st.form_submit_button("Guardar Estado de Pago")
+                        
+                        if submit_p:
+                            pagos_data = []
+                            if os.path.exists(ARCHIVO_PAGOS):
+                                with open(ARCHIVO_PAGOS, mode="r", encoding="utf-8") as fp:
+                                    pagos_data = list(csv.reader(fp))
+                            header_p = ["Deportista", "Estado", "Fecha", "Valor", "Medio"]
+                            if not pagos_data:
+                                pagos_data = [header_p]
+                                
+                            actualizado = False
+                            for i in range(1, len(pagos_data)):
+                                if pagos_data[i][0] == atleta_sel:
+                                    pagos_data[i] = [atleta_sel, estado_pago, str(fecha_pago), valor_pago, medio_pago]
+                                    actualizado = True
+                                    break
+                            if not actualizado:
+                                pagos_data.append([atleta_sel, estado_pago, str(fecha_pago), valor_pago, medio_pago])
+                                
+                            with open(ARCHIVO_PAGOS, mode="w", newline="", encoding="utf-8") as fp:
+                                csv.writer(fp).writerows(pagos_data)
+                            st.success(f"¡Pago registrado correctamente para {atleta_sel}!")
+                            st.rerun()
+                else:
+                    st.info("Debe registrar deportistas primero.")
+        else:
+            st.info("No hay deportistas en la base de datos.")
+
+    with tab_p_rec:
+        if os.path.exists(ARCHIVO_PAGOS):
+            with open(ARCHIVO_PAGOS, mode="r", encoding="utf-8") as f:
+                pagos_list = list(csv.reader(f))
+                pagados = [r for r in pagos_list[1:] if len(r) > 1 and r[1] == "Pagado / Al Día"]
+                if pagados:
+                    nombres_pagados = [r[0] for r in pagados]
+                    atleta_rec = st.selectbox("Seleccionar Atleta con Pago al Día:", nombres_pagados)
+                    for r in pagados:
+                        if r[0] == atleta_rec:
+                            recibo_texto = f"""
+=====================================================
+        CLUB JINSEI TAEKWONDO TENJO
+     RECIBO OFICIAL DE PAGO DE MENSUALIDAD
+=====================================================
+Deportista: {r[0]}
+Estado: {r[1]}
+Fecha de Pago: {r[2]}
+Valor: {r[3]}
+Medio Utilizado: {r[4]}
+-----------------------------------------------------
+Sede: Tenjo, Cundinamarca — Vereda Chincé, Sector Zoque
+Teléfono de Pagos: {NUMERO_PAGOS_DIGITALES}
+¡Gracias por su puntualidad y apoyo al club!
+=====================================================
+                            """
+                            st.text_area("Comprobante Oficial Generado", recibo_texto, height=220)
+                            st.download_button("⬇️ Descargar Recibo Oficial (.TXT)", data=recibo_texto, file_name=f"recibo_{r[0].replace(' ', '_')}.txt", mime="text/plain")
+                else:
+                    st.info("No hay deportistas con estado 'Pagado / Al Día' para generar recibo.")
+        else:
+            st.info("No hay registros de pagos.")
+
+elif st.session_state.modulo_activo == "Agenda de Torneos y Eventos":
+    st.header("📅 Agenda de Torneos y Eventos")
+    with st.form("form_agenda_ev"):
+        nom_ev = st.text_input("Nombre del Torneo, Examen o Evento")
+        fec_ev = st.date_input("Fecha del Evento")
+        sub_ev = st.form_submit_button("Registrar en Agenda")
+        if sub_ev:
+            if nom_ev:
+                with open(ARCHIVO_EVENTOS, mode="a", newline="", encoding="utf-8") as fe:
+                    csv.writer(fe).writerows([[nom_ev, str(fec_ev)]])
+                st.success("¡Evento agregado a la agenda!")
+    if os.path.exists(ARCHIVO_EVENTOS):
+        with open(ARCHIVO_EVENTOS, mode="r", encoding="utf-8") as fe:
+            for r in csv.reader(fe):
+                if r:
+                    st.write(f"🏆 **{r[0]}** — Fecha: {r[1]}")
