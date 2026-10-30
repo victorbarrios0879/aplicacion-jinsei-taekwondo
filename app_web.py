@@ -331,97 +331,97 @@ else:
     # ========================================================
     # VISTA PRIVADA: PANEL PRINCIPAL Y MÓDULOS DEL CLUB
     # ========================================================
-        # Barra lateral de control de sesión
-        st.sidebar.title(f"👤 {st.session_state.get('usuario_actual', 'Coach')}")
-        if st.sidebar.button("Cerrar Sesión"):
-            st.session_state.autenticado = False
-            st.rerun()
+            # Barra lateral de control de sesión
+            st.sidebar.title(f"👤 {st.session_state.get('usuario_actual', 'Coach')}")
+            if st.sidebar.button("Cerrar Sesión"):
+                st.session_state.autenticado = False
+                st.rerun()
 
-        # Todo el contenido de tus módulos de trabajo va aquí adentro:
-        st.markdown("## ⚡ Acceso Rápido a Módulos de Trabajo")
-        # ... (Tus tarjetas, fichas, asistencia, etc.)
+            # Todo el contenido de tus módulos de trabajo va aquí adentro:
+            st.markdown("## ⚡ Acceso Rápido a Módulos de Trabajo")
+            # ... (Tus tarjetas, fichas, asistencia, etc.)
 
 
-    # ----------------- APLICACIÓN PRINCIPAL -----------------
+        # ----------------- APLICACIÓN PRINCIPAL -----------------
 
-        st.sidebar.info("Jinsei Taekwondo — Tenjo")
-    # Definir IMG_LOGO por seguridad si no existe
-    # Cargar el logo oficial directamente desde la carpeta assets en la barra lateral
- st.sidebar.image("logo.png", use_container_width=True)
-    # Botón rápido de contacto en la barra lateral
-st.sidebar.markdown(f"📱 **Contacto / Pagos:**\n`{NUMERO_PAGOS_DIGITALES}`")
-st.sidebar.markdown("---")
+            st.sidebar.info("Jinsei Taekwondo — Tenjo")
+        # Definir IMG_LOGO por seguridad si no existe
+        # Cargar el logo oficial directamente desde la carpeta assets en la barra lateral
+    st.sidebar.image("logo.png", use_container_width=True)
+        # Botón rápido de contacto en la barra lateral
+    st.sidebar.markdown(f"📱 **Contacto / Pagos:**\n`{NUMERO_PAGOS_DIGITALES}`")
+    st.sidebar.markdown("---")
 
-modulos_lista = [
-        "Panel Principal",
-        "Ficha Integral del Deportista e IMC",
-        "Control de Asistencia",
-        "Panel General del Entrenador (Solo Coach)",
-        "Galeria y Videos (Multimedia)",
-        "Cargar Fichas, Exoneraciones y PDFs",
-        "Agenda de Torneos y Eventos",
-        "Pagos (Alerta)"
-    ]
+    modulos_lista = [
+            "Panel Principal",
+            "Ficha Integral del Deportista e IMC",
+            "Control de Asistencia",
+            "Panel General del Entrenador (Solo Coach)",
+            "Galeria y Videos (Multimedia)",
+            "Cargar Fichas, Exoneraciones y PDFs",
+            "Agenda de Torneos y Eventos",
+            "Pagos (Alerta)"
+        ]
 
-    # Selector de navegación en la barra lateral
-    try:
-        index_actual = modulos_lista.index(st.session_state.modulo_activo)
-    except ValueError:
-        index_actual = 0
+        # Selector de navegación en la barra lateral
+        try:
+            index_actual = modulos_lista.index(st.session_state.modulo_activo)
+        except ValueError:
+            index_actual = 0
 
-    modulo_seleccionado = st.sidebar.selectbox("Seleccione un módulo:", modulos_lista, index=index_actual, key="menu_lateral_principal")
-    st.session_state.modulo_activo = modulo_seleccionado
+        modulo_seleccionado = st.sidebar.selectbox("Seleccione un módulo:", modulos_lista, index=index_actual, key="menu_lateral_principal")
+        st.session_state.modulo_activo = modulo_seleccionado
 
-    # --- CUERPO PRINCIPAL ---
-    if st.session_state.modulo_activo == "Panel Principal":
-        st.title("🥋 Club Jinsei Taekwondo Tenjo")
-        st.markdown("Sistema oficial de gestión deportiva, académica y administrativa.")
+        # --- CUERPO PRINCIPAL ---
+        if st.session_state.modulo_activo == "Panel Principal":
+            st.title("🥋 Club Jinsei Taekwondo Tenjo")
+            st.markdown("Sistema oficial de gestión deportiva, académica y administrativa.")
 
-    elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
-        st.header("Carta de Exoneración y Documentos PDF")
-        st.header("📄 Carta de Exoneración y Documentos PDF")
-        
-        tab_subir, tab_ver, tab_borrar = st.tabs(["Subir Documento", "Ver Documentos", "🗑️ Eliminar Documento"])
-        
-        with tab_subir:
-            st.markdown("""
-            <div class="exoneracion-box">
-                <b>CLUB JINSEI TAEKWONDO TENJO</b><br>
-                <b>ACUERDO DE EXONERACIÓN DE RESPONSABILIDAD Y ASUNCIÓN DE RIESGOS</b><br>
-                <i>Sede: Tenjo, Cundinamarca — Vereda Chincé, Sector Zoque</i><br><br>
-                Por medio del presente documento, el deportista o su acudiente legal declaran que entienden y aceptan la práctica deportiva.
-            </div>
-            """, unsafe_allow_html=True)
-            st.markdown("---")
+        elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
+            st.header("Carta de Exoneración y Documentos PDF")
+            st.header("📄 Carta de Exoneración y Documentos PDF")
             
-            with st.form("form_exoneracion_pdf"):
-                st.subheader("Subir Carta de Exoneración o Documento (PDF)")
-                nombre_atleta_ex = st.text_input("Nombre Completo del Deportista")
-                pdf_subido = st.file_uploader("Seleccione el archivo PDF", type=["pdf"])
-                submit_pdf = st.form_submit_button("Subir Documento al Sistema")
+            tab_subir, tab_ver, tab_borrar = st.tabs(["Subir Documento", "Ver Documentos", "🗑️ Eliminar Documento"])
+            
+            with tab_subir:
+                st.markdown("""
+                <div class="exoneracion-box">
+                    <b>CLUB JINSEI TAEKWONDO TENJO</b><br>
+                    <b>ACUERDO DE EXONERACIÓN DE RESPONSABILIDAD Y ASUNCIÓN DE RIESGOS</b><br>
+                    <i>Sede: Tenjo, Cundinamarca — Vereda Chincé, Sector Zoque</i><br><br>
+                    Por medio del presente documento, el deportista o su acudiente legal declaran que entienden y aceptan la práctica deportiva.
+                </div>
+                """, unsafe_allow_html=True)
+                st.markdown("---")
                 
-                if submit_pdf:
-                    if nombre_atleta_ex and pdf_subido is not None:
-                        nombre_limpio = nombre_atleta_ex.replace(" ", "_").lower()
-                        ruta_destino = EXONERACIONES_DIR / f"exoneracion_{nombre_limpio}.pdf"
-                        with open(ruta_destino, "wb") as f:
-                            f.write(pdf_subido.getbuffer())
-                        st.success(f"¡Documento de {nombre_atleta_ex} cargado con éxito!")
-                    else:
-                        st.warning("Por favor ingrese el nombre y adjunte el archivo PDF.")
+                with st.form("form_exoneracion_pdf"):
+                    st.subheader("Subir Carta de Exoneración o Documento (PDF)")
+                    nombre_atleta_ex = st.text_input("Nombre Completo del Deportista")
+                    pdf_subido = st.file_uploader("Seleccione el archivo PDF", type=["pdf"])
+                    submit_pdf = st.form_submit_button("Subir Documento al Sistema")
+                    
+                    if submit_pdf:
+                        if nombre_atleta_ex and pdf_subido is not None:
+                            nombre_limpio = nombre_atleta_ex.replace(" ", "_").lower()
+                            ruta_destino = EXONERACIONES_DIR / f"exoneracion_{nombre_limpio}.pdf"
+                            with open(ruta_destino, "wb") as f:
+                                f.write(pdf_subido.getbuffer())
+                            st.success(f"¡Documento de {nombre_atleta_ex} cargado con éxito!")
+                        else:
+                            st.warning("Por favor ingrese el nombre y adjunte el archivo PDF.")
 
-        with tab_ver:
-            st.subheader("Documentos Cargados en el Sistema")
-            if os.path.exists(EXONERACIONES_DIR):
-                archivos_pdf = list(EXONERACIONES_DIR.glob("*.pdf"))
-                if archivos_pdf:
-                    for archivo in archivos_pdf:
-                        col_v1, col_v2 = st.columns([3, 1])
-                        with col_v1:
-                            st.write(f"📄 `{archivo.name}`")
-                        with col_v2:
-                            with open(archivo, "rb") as f_dl:
-                                st.download_button("⬇️ Descargar", data=f_dl, file_name=archivo.name, mime="application/pdf", key=f"dl_usr_{archivo.name}")
+            with tab_ver:
+                st.subheader("Documentos Cargados en el Sistema")
+                if os.path.exists(EXONERACIONES_DIR):
+                    archivos_pdf = list(EXONERACIONES_DIR.glob("*.pdf"))
+                    if archivos_pdf:
+                        for archivo in archivos_pdf:
+                            col_v1, col_v2 = st.columns([3, 1])
+                            with col_v1:
+                                st.write(f"📄 `{archivo.name}`")
+                            with col_v2:
+                                with open(archivo, "rb") as f_dl:
+                                    st.download_button("⬇️ Descargar", data=f_dl, file_name=archivo.name, mime="application/pdf", key=f"dl_usr_{archivo.name}")
                 else:
                     st.info("No hay documentos de exoneración cargados todavía.")
             else:
