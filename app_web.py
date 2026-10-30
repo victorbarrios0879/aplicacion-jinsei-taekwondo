@@ -20,7 +20,38 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+import base64
+import os
 
+def configurar_estondo_y_estilos(image_file):
+    if os.path.exists(image_file):
+        with open(image_file, "rb") as f:
+            data = f.read()
+        encoded = base64.b64encode(data).decode()
+        css = f"""
+        <style>
+        /* Fondo de la aplicación con la foto de los deportistas */
+        .stApp {{
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("data:image/jpg;base64,{encoded}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }}
+        
+        /* Centrar las pestañas (st.tabs) */
+        .stTabs {{
+            display: flex;
+            justify-content: center;
+        }}
+        div[data-baseweb="tab-list"] {{
+            justify-content: center;
+        }}
+        </style>
+        """
+        st.markdown(css, unsafe_allow_html=True)
+
+# Llama a la función al inicio (cambia por la ruta exacta de tu foto de deportistas)
+configurar_estondo_y_estilos("assets/fondo_deportistas.jpg")
 # Archivos de persistencia local
 ARCHIVO_DEPORTISTAS = "deportistas_integral.csv"
 ARCHIVO_EVENTOS = "eventos.csv"
