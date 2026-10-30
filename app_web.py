@@ -270,6 +270,37 @@ if os.path.exists(logo_path):
         LOGO_BASE64 = base64.b64encode(logo_file.read()).decode()
 else:
     LOGO_BASE64 = ""
+    if not st.session_state.get("autenticado", False):
+        # Todo tu bloque actual de columnas, logo, encabezado y las pestañas (tab1, tab2, tab3)
+        col_acc1, col_acc2, col_acc3 = st.columns([1, 2, 1])
+
+        with col_acc2:
+            html_header_login = f"""
+                <div class="header-branding" style="justify-content: center; margin-top: 25px;">
+                    <img src="data:image/jpeg;base64,{LOGO_BASE64}" class="header-logo">
+                    <div class="header-text">
+                        <h1 class="main-title-inline">JINSEI TAEKWONDO TENJO</h1>
+                        <p class="sub-title-inline">Portal Web de Gestión Deportiva e Integración</p>
+                        <p class="location-text">📍 Tenjo, Cundinamarca – Vereda Chincé, Sector Zoque</p>
+                        <p class="contact-text">📞 Contacto / WhatsApp: {TELEFONO_CLUB}</p>
+                    </div>
+                </div>
+            """
+            st.markdown(html_header_login, unsafe_allow_html=True)
+
+        tab1, tab2, tab3 = st.tabs(["🔑 Iniciar Sesión", "📝 Registrarse", "❓ Recuperar Credenciales"])
+
+        with tab1:
+            # Tu formulario de inicio de sesión aquí...
+            pass
+        # (Lo mismo para tab2 y tab3...)
+
+    else:
+        # ==========================================
+        # AQUÍ COMIENZA TU PANEL PRINCIPAL AUTENTICADO
+        # ==========================================
+        st.markdown("## Acceso Rápido a Módulos de Trabajo")
+        # Todo el código de tus tarjetas de módulos va indentado aquí adentro...
 if not st.session_state.autenticado:
     col_acc1, col_acc2, col_acc3 = st.columns([1, 2, 1])
     
