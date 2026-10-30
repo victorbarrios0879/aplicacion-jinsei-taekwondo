@@ -343,9 +343,7 @@ else:
 
 
     # ----------------- APLICACIÓN PRINCIPAL -----------------
-  if st.session_state.get("autenticado", False):
-        st.sidebar.title(f"👤 {st.session_state.get('usuario_actual', 'Coach')}")
-    else:
+
         st.sidebar.info("Jinsei Taekwondo — Tenjo")
     # Definir IMG_LOGO por seguridad si no existe
     # Cargar el logo oficial directamente desde la carpeta assets en la barra lateral
