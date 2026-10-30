@@ -271,32 +271,31 @@ if os.path.exists(logo_path):
 else:
     LOGO_BASE64 = ""
    # --- INTERRUPTOR PRINCIPAL DE AUTENTICACIÓN ---
-if not st.session_state.get("autenticado", False):
-    
-    # ----------------------------------------------------
-    # BLOQUE 1: SOLO PANTALLA DE LOGIN Y REGISTRO
-    # ----------------------------------------------------
-    col_acc1, col_acc2, col_acc3 = st.columns([1, 2, 1])
+# --- 1. CONFIGURACIÓN E INICIALIZACIÓN DE SESIÓN ---
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = False
 
-    with col_acc2:
-        html_header_login = f"""
-            <div class="header-branding" style="justify-content: center; margin-top: 25px;">
-                <img src="data:image/jpeg;base64,{LOGO_BASE64}" class="header-logo">
-                <div class="header-text">
-                    <h1 class="main-title-inline">JINSEI TAEKWONDO TENJO</h1>
-                    <p class="sub-title-inline">Portal Web de Gestión Deportiva e Integración</p>
-                    <p class="location-text">📍 Tenjo, Cundinamarca – Vereda Chincé, Sector Zoque</p>
-                    <p class="contact-text">📞 Contacto / WhatsApp: {TELEFONO_CLUB}</p>
-                </div>
-            </div>
-        """
-        st.markdown(html_header_login, unsafe_allow_html=True)
+# --- 2. CONTROL DE VISTAS (LOGIN VS PANEL PRINCIPAL) ---
+if not st.session_state.autenticado:
+    # ========================================================
+    # VISTA PÚBLICA: ÚNICAMENTE LOGIN, REGISTRO Y RECUPERACIÓN
+    # ========================================================
+    _, col_principal, _ = st.columns([1, 2.5, 1])
 
-    tab1, tab2, tab3 = st.tabs(["🔑 Iniciar Sesión", "📝 Registrarse", "❓ Recuperar Credenciales"])
+    with col_principal:
+        if os.path.exists("assets/logo.png"):
+            col_img1, col_img2, col_img3 = st.columns([1, 1, 1])
+            with col_img2:
+                st.image("assets/logo.png", width=110)
 
-    with tab1:
-        _, col_centro, _ = st.columns([1, 2, 1])
-        with col_centro:
+        st.markdown("<h2 style='text-align: center;'>Club Jinsei Taekwondo Tenjo</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: gray;'>Sistema oficial de gestión deportiva y administrativa.</p>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        tab1, tab2, tab3 = st.tabs(["🔑 Iniciar Sesión", "📝 Registrarse", "❓ Recuperar Credenciales"])
+
+        with tab1:
+            st.markdown("<br>", unsafe_allow_html=True)
             with st.form("form_login"):
                 st.subheader("Ingrese a su cuenta")
                 usuario_ingreso = st.text_input("Usuario o Correo")
@@ -312,27 +311,35 @@ if not st.session_state.get("autenticado", False):
                 else:
                     st.error("Usuario o contraseña incorrectos.")
 
-    with tab2:
-        with st.form("form_registro"):
-            st.subheader("📝 Registro de Nuevo Usuario")
-            nuevo_user = st.text_input("Elija un Nombre de Usuario")
-            nuevo_email = st.text_input("Correo Electrónico")
-            nuevo_pass = st.text_input("Contraseña", type="password")
-            submit_registro = st.form_submit_button("Registrarse", use_container_width=True)
-            
-    with tab3:
-        with st.form("form_recuperar"):
-            st.subheader("❓ Recuperar Credenciales")
-            correo_recuperar = st.text_input("Ingrese su correo registrado")
-            submit_recuperar = st.form_submit_button("Enviar Solicitud", use_container_width=True)
+        with tab2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            with st.form("form_registro"):
+                st.subheader("📝 Registro de Nuevo Usuario")
+                nuevo_user = st.text_input("Elija un Nombre de Usuario")
+                nuevo_email = st.text_input("Correo Electrónico")
+                nuevo_pass = st.text_input("Contraseña", type="password")
+                submit_registro = st.form_submit_button("Registrarse", use_container_width=True)
+                
+        with tab3:
+            st.markdown("<br>", unsafe_allow_html=True)
+            with st.form("form_recuperar"):
+                st.subheader("❓ Recuperar Credenciales")
+                correo_recuperar = st.text_input("Ingrese su correo registrado")
+                submit_recuperar = st.form_submit_button("Enviar Solicitud", use_container_width=True)
 
 else:
-    
-    # ----------------------------------------------------
-    # BLOQUE 2: SOLO EL PANEL PRINCIPAL (Cuando SÍ está autenticado)
-    # ----------------------------------------------------
-    st.markdown("## Acceso Rápido a Módulos de Trabajo")
-    # ... (Aquí va todo el código de tus tarjetas de módulos, fichas, asistencia, etc.)
+    # ========================================================
+    # VISTA PRIVADA: PANEL PRINCIPAL Y MÓDULOS DEL CLUB
+    # ========================================================
+    # Barra lateral de control de sesión
+    st.sidebar.title(f"👤 {st.session_state.get('usuario_actual', 'Coach')}")
+    if st.sidebar.button("Cerrar Sesión"):
+        st.session_state.autenticado = False
+        st.rerun()
+
+    # Todo el contenido de tus módulos de trabajo va aquí adentro:
+    st.markdown("## ⚡ Acceso Rápido a Módulos de Trabajo")
+    # ... (Tus tarjetas, fichas, asistencia, etc.)
 
 
 # ----------------- APLICACIÓN PRINCIPAL -----------------
