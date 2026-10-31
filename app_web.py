@@ -101,7 +101,6 @@ def localizar_fotografia_fondo():
     candidato = BASE_DIR / "jinsei.JPG"
     if candidato.is_file():
         return candidato
-    # Búsqueda alternativa insensible a mayúsculas en la raíz por seguridad
     if BASE_DIR.is_dir():
         for archivo in BASE_DIR.iterdir():
             if archivo.is_file() and archivo.name.lower() == "jinsei.jpg":
@@ -786,4 +785,203 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
                         if duplicado:
                             st.error(f"⚠️ Ya existe un deportista registrado con el número de documento {doc_reg}.")
                         else:
-                            nueva_fila = [nombre_completo, doc_reg, str(edad_calc), eps_reg, "60.0
+                            nueva_fila = [nombre_completo, doc_reg, str(edad_calc), eps_reg, "60.0", "1.70", "20.76", "Normal", "Blanco (10° Kup)", tel_reg, str(fing_reg)]
+                            registros_dep.append(nueva_fila)
+                            with open(ARCHIVO_DEPORTISTAS, mode="w", newline="", encoding="utf-8") as fd:
+                                writer = csv.writer(fd)
+                                writer.writerows(registros_dep)
+                            st.success(f"¡Deportista {nombre_completo} registrado con éxito! (Edad calculada: {edad_calc} años)")
+                    else:
+                        st.warning("Por favor complete los campos obligatorios: Nombres, Apellidos y Documento.")
+
+        with tab_del_c:
+            st.subheader("Eliminación Manual de Deportista")
+            if os.path.exists(ARCHIVO_DEPORTISTAS):
+                with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
+                    data_del = list(csv.reader(f))
+                    if len(data_del) > 1:
+                        filas_deps = data_del[1:]
+                        opciones_dep = [f"{r[0]} (Doc: {r[1]})" for r in filas_deps if len(r) > 1]
+                        atleta_seleccionado = st.selectbox("Seleccione el deportista a gestionar:", opciones_dep)
+                        
+                        if atleta_seleccionado:
+                            doc_buscar = atleta_seleccionado.split("Doc: ")[1].replace(")", "").strip()
+                            atleta_encontrado = None
+                            for r in filas_deps:
+                                if len(r) > 1 and r[1] == doc_buscar:
+                                    atleta_encontrado = r
+                                    break
+                                    
+                            if atleta_encontrado:
+                                st.markdown(f"""
+                                **Datos del deportista seleccionado:**
+                                * **Nombre:** {atleta_encontrado[0]}
+                                * **Documento:** {atleta_encontrado[1]}
+                                * **Edad:** {atleta_encontrado[2]}
+                                * **EPS:** {atleta_encontrado[3]}
+                                * **Grado / Cinturón:** {atleta_encontrado[8] if len(atleta_encontrado)>8 else 'N/A'}
+                                * **Contacto:** {atleta_encontrado[9] if len(atleta_encontrado)>9 else 'N/A'}
+                                """)
+                                
+                                if st.button("❌ Eliminar este Deportista Permanentemente"):
+                                    st.session_state[f"confirm_del_atleta_{doc_buscar}"] = True
+                                    
+                                if st.session_state.get(f"confirm_del_atleta_{doc_buscar}", False):
+                                    st.warning(f"⚠️ ¿Está completamente seguro de eliminar a {atleta_encontrado[0]} del sistema?")
+                                    if st.button("Sí, eliminar deportista", key=f"yes_del_atl_{doc_buscar}"):
+                                        nuevos_deps = [data_del[0]] + [r for r in filas_deps if r[1] != doc_buscar]
+                                        with open(ARCHIVO_DEPORTISTAS, mode="w", newline="", encoding="utf-8") as fw:
+                                            csv.writer(fw).writerows(nuevos_deps)
+                                        st.success(f"Deportista {atleta_encontrado[0]} eliminado correctamente.")
+                                        st.rerun()
+                                    if st.button("Cancelar", key=f"cancel_del_atl_{doc_buscar}"):
+                                        st.session_state[f"confirm_del_atleta_{doc_buscar}"] = False
+                                        st.rerun()
+                    else:
+                        st.info("No hay deportistas registrados para eliminar.")
+            else:
+                st.info("No hay base de datos de deportistas disponible.")
+                        
+        with tab_mac_c:
+            st.subheader("Carga y Gestión de Macroestructuras de Entrenamiento")
+            with st.form("form_subir_macro"):
+                titulo_mac = st.text_input("Título de la Macroestructura (Ej: Macro Anual 2026)")
+                archivo_mac = st.file_uploader("Subir Archivo (Excel o PDF)", type=["xlsx", "xls", "pdf", "csv"])
+                submit_mac = st.form_submit_button("Subir Macroestructura")
+                
+                if submit_mac:
+                    if titulo_mac and archivo_mac is not None:
+                        ext = archivo_mac.name.split('.')[-1]
+                        ruta_m = MACRO_DIR / f"{titulo_mac.replace(' ', '_').lower()}.{ext}"
+                        with open(ruta_m, "wb") as fm:
+                            fm.write(archivo_mac.getbuffer())
+                        st.success(f"¡Macroestructura '{titulo_mac}' cargada con éxito!")
+                    else:
+                        st.warning("Ingrese un título y adjunte un archivo.")
+                        
+            st.markdown("---")
+            st.subheader("Archivos Cargados y Descarga / Borrado")
+            macros_disponibles = list(MACRO_DIR.glob("*.*"))
+            if macros_disponibles:
+                for mac_item in macros_disponibles:
+                    cm1, cm2 = st.columns([3, 1])
+                    with cm1:
+                        st.write(f"📊 `{mac_item.name}`")
+                    with cm2:
+                        if st.button("🗑️ Borrar", key=f"del_mac_{mac_item.name}"):
+                            mac_item.unlink()
+                            st.success(f"Eliminado: {mac_item.name}")
+                            st.rerun()
+            else:
+                st.info("No hay macroestructuras cargadas.")
+
+        with tab_doc_c:
+            st.subheader("Administración de Archivos Exoneración")
+            archivos_pdf = list(EXONERACIONES_DIR.glob("*.pdf"))
+            if archivos_pdf:
+                for pdf_item in archivos_pdf:
+                    c_n, c_b = st.columns([3, 1])
+                    with c_n:
+                        st.write(f"📄 `{pdf_item.name}`")
+                    with c_b:
+                        if st.button(f"🗑️ Eliminar", key=f"del_pdf_c_{pdf_item.name}"):
+                            pdf_item.unlink()
+                            st.success(f"Eliminado: {pdf_item.name}")
+                            st.rerun()
+    elif password_coach != "":
+        st.error("⚠️ Contraseña incorrecta.")
+
+elif st.session_state.modulo_activo == "Pagos (Alerta)":
+    mostrar_encabezado_institucional("Control de Pagos")
+    dia_actual = datetime.now().day
+    if dia_actual <= 5:
+        st.warning(f"🚨 **¡AVISO INSTITUCIONAL DE MENSUALIDAD!** Nos encontramos en los primeros 5 días del mes (Día {dia_actual}). Por favor recuerde realizar el pago de su mensualidad a tiempo.")
+
+    st.info(f"""
+    📲 **MEDIOS DE PAGO OFICIALES DISPONIBLES:**
+    * **Nequi:** `{NUMERO_PAGOS_DIGITALES}`
+    * **Daviplata:** `{NUMERO_PAGOS_DIGITALES}`
+    * **Llave / ID de Pago:** `{NUMERO_PAGOS_DIGITALES}`
+    """)
+    st.markdown("---")
+    
+    tab_p_ver, tab_p_reg, tab_p_rec = st.tabs(["📋 Consultar Pagos y Vencidos", "➕ Registrar Pago", "🧾 Generar Recibo Oficial"])
+    
+    with tab_p_ver:
+        if os.path.exists(ARCHIVO_PAGOS):
+            with open(ARCHIVO_PAGOS, mode="r", encoding="utf-8") as f:
+                reader_p = list(csv.reader(f))
+                if len(reader_p) > 1:
+                    for row in reader_p[1:]:
+                        atleta = row[0]
+                        estado = row[1]
+                        fecha = row[2]
+                        valor = row[3] if len(row) > 3 else "$60.000 COP"
+                        if estado == "Pagado / Al Día":
+                            st.success(f"✅ **{atleta}** — Estado: **Pagado** | Fecha: {fecha} | Valor: {valor}")
+                        else:
+                            st.error(f"🚨 **{atleta}** — Estado: **PENDIENTE / VENCIDO**")
+                else:
+                    st.info("No hay registros de pagos cargados.")
+        else:
+            st.info("Aún no hay historial de pagos.")
+
+    with tab_p_reg:
+        if os.path.exists(ARCHIVO_DEPORTISTAS):
+            with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
+                deps = [r[0] for r in list(csv.reader(f))[1:]]
+                if deps:
+                    with st.form("form_reg_pago"):
+                        atleta_sel = st.selectbox("Seleccionar Deportista", deps)
+                        estado_pago = st.selectbox("Estado", ["Pagado / Al Día", "Pendiente / Vencido"])
+                        valor_pago = st.text_input("Valor Cancelado", value="$60.000 COP")
+                        medio_pago = st.selectbox("Medio Utilizado", ["Nequi", "Daviplata", "Llave / Dale", "Efectivo", "Transferencia"])
+                        fecha_pago = st.date_input("Fecha del Pago", value=datetime.now())
+                        submit_p = st.form_submit_button("Guardar Estado de Pago")
+                        
+                        if submit_p:
+                            pagos_data = []
+                            if os.path.exists(ARCHIVO_PAGOS):
+                                with open(ARCHIVO_PAGOS, mode="r", encoding="utf-8") as fp:
+                                    pagos_data = list(csv.reader(fp))
+                            header_p = ["Deportista", "Estado", "Fecha", "Valor", "Medio"]
+                            if not pagos_data:
+                                pagos_data = [header_p]
+                                
+                            actualizado = False
+                            for i in range(1, len(pagos_data)):
+                                if pagos_data[i][0] == atleta_sel:
+                                    pagos_data[i] = [atleta_sel, estado_pago, str(fecha_pago), valor_pago, medio_pago]
+                                    actualizado = True
+                                    break
+                            if not actualizado:
+                                pagos_data.append([atleta_sel, estado_pago, str(fecha_pago), valor_pago, medio_pago])
+                                
+                            with open(ARCHIVO_PAGOS, mode="w", newline="", encoding="utf-8") as fp:
+                                csv.writer(fp).writerows(pagos_data)
+                            st.success(f"¡Pago registrado correctamente para {atleta_sel}!")
+                            st.rerun()
+                else:
+                    st.info("Debe registrar deportistas primero.")
+        else:
+            st.info("No hay deportistas en la base de datos.")
+
+    with tab_p_rec:
+        if os.path.exists(ARCHIVO_PAGOS):
+            with open(ARCHIVO_PAGOS, mode="r", encoding="utf-8") as f:
+                pagos_list = list(csv.reader(f))
+                pagados = [r for r in pagos_list[1:] if len(r) > 1 and r[1] == "Pagado / Al Día"]
+                if pagados:
+                    nombres_pagados = [r[0] for r in pagados]
+                    atleta_rec = st.selectbox("Seleccionar Atleta con Pago al Día:", nombres_pagados)
+                    for r in pagados:
+                        if r[0] == atleta_rec:
+                            recibo_texto = f"""
+=====================================================
+        CLUB JINSEI TAEKWONDO TENJO
+     RECIBO OFICIAL DE PAGO DE MENSUALIDAD
+=====================================================
+Deportista: {r[0]}
+Estado: {r[1]}
+Fecha de Pago: {r[2]}
+Valor: {r[3]}
