@@ -16,14 +16,10 @@ if "modulo_activo" not in st.session_state:
 if "usuario_actual" not in st.session_state:
     st.session_state.usuario_actual = ""
 
-def navegar_a(modulo):
-    """Mantiene sincronizados el módulo activo y el selector lateral sin duplicar widgets."""
-    st.session_state.modulo_activo = modulo
-    st.session_state.menu_lateral_principal = modulo
-
-
-def sincronizar_menu_lateral():
-    st.session_state.modulo_activo = st.session_state.menu_lateral_principal
+def cambiar_modulo(nuevo_modulo):
+    """Cambia el módulo activo de manera segura y recarga la interfaz."""
+    st.session_state.modulo_activo = nuevo_modulo
+    st.rerun()
 
 st.set_page_config(
     page_title="Jinsei Taekwondo Tenjo - Panel Principal",
@@ -52,6 +48,13 @@ FOTOS_CLUB_DIR = BASE_DIR / "fotos_club"
 FOTOS_CLUB_DIR.mkdir(exist_ok=True)
 MACRO_DIR = BASE_DIR / "macroestructura_archivos"
 MACRO_DIR.mkdir(exist_ok=True)
+
+# Directorio general para el nuevo módulo de Archivo de Eventos y Documentos
+ARCHIVO_DOCUMENTOS_DIR = BASE_DIR / "archivo_documentos_club"
+ARCHIVO_DOCUMENTOS_DIR.mkdir(exist_ok=True)
+CATEGORIAS_DOCUMENTOS = ["Eventos", "Competencias", "Exámenes de ascenso", "Otros documentos del club"]
+for cat in CATEGORIAS_DOCUMENTOS:
+    (ARCHIVO_DOCUMENTOS_DIR / cat).mkdir(exist_ok=True)
 
 def verificar_usuario(user, pwd):
     if user == "admin" and pwd == CONTRASENA_ENTRENADOR:
@@ -93,7 +96,7 @@ def recuperar_credenciales(email_consulta):
                     return True, row[0], row[1]
     return False, None, None
 
-# ESTILOS INSTITUCIONALES Y FONDO CON FOTO DE DEPORTISTAS (foto.JPG)
+# ESTILOS INSTITUCIONALES Y FONDO GLOBAL CON foto.JPG
 def localizar_fotografia_fondo():
     candidatos = [
         BASE_DIR / "foto.JPG",
@@ -112,7 +115,6 @@ def localizar_fotografia_fondo():
                     return archivo
     return None
 
-
 def aplicar_estilos_institucionales():
     foto_bg_path = localizar_fotografia_fondo()
     imagen_css = ""
@@ -122,16 +124,13 @@ def aplicar_estilos_institucionales():
         mime = "image/png" if foto_bg_path.suffix.lower() == ".png" else "image/jpeg"
         imagen_css = f'url("data:{mime};base64,{encoded_bg}")'
     else:
-        st.warning(
-            "No se encontró foto.JPG. Coloca el archivo en la misma carpeta "
-            "que app_web.py para utilizarlo como fondo."
-        )
+        st.warning("No se encontró foto.JPG. Colócalo en la raíz del proyecto para usarlo como fondo.")
 
     css = f"""
     <style>
     .stApp {{
         background-image:
-            linear-gradient(rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.58)),
+            linear-gradient(rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.65)),
             {imagen_css if imagen_css else "none"};
         background-size: cover;
         background-position: center center;
@@ -156,6 +155,7 @@ def aplicar_estilos_institucionales():
     .bg-verde {{ background: linear-gradient(135deg, #15803D 0%, #22C55E 100%); }}
     .bg-rojo {{ background: linear-gradient(135deg, #B91C1C 0%, #EF4444 100%); }}
     .bg-amarillo {{ background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%); color: #1E293B; }}
+    .bg-morado {{ background: linear-gradient(135deg, #581C87 0%, #9333EA 100%); }}
     .card-title-custom {{ font-size: 18px; font-weight: bold; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }}
     .card-desc-custom {{ font-size: 13px; opacity: 0.95; font-weight: normal; }}
     .badge-icon {{ padding: 4px 10px; border-radius: 20px; font-size: 12px; background: #1E3A8A; color: white; margin-right: 6px; }}
@@ -174,13 +174,10 @@ if not st.session_state.autenticado:
         if not logo_file.exists():
             logo_file = BASE_DIR / "logo.png"
 
-        # Logo institucional a la izquierda y nombre del club alineado a su derecha.
         col_logo, col_titulo = st.columns([0.8, 3.2], vertical_alignment="center")
         with col_logo:
             if logo_file.exists():
                 st.image(str(logo_file), width=105)
-            else:
-                st.warning("No se encontró logo.png en la carpeta raíz ni en assets.")
         with col_titulo:
             st.markdown(
                 "<div style='display:flex;align-items:center;min-height:105px;'>"
@@ -272,6 +269,7 @@ modulos_lista = [
     "Panel General del Entrenador (Solo Coach)",
     "Galería y Videos (Multimedia)",
     "Cargar Fichas, Exoneraciones y PDFs",
+    "Archivo de Eventos, Competencias y Ascensos",
     "Agenda de Torneos y Eventos",
     "Pagos (Alerta)"
 ]
@@ -281,26 +279,20 @@ try:
 except ValueError:
     index_actual = 0
 
-if st.session_state.get("menu_lateral_principal") not in modulos_lista:
-    st.session_state.menu_lateral_principal = st.session_state.modulo_activo
-else:
-    st.session_state.menu_lateral_principal = st.session_state.modulo_activo
+def actualizar_desde_sidebar():
+    st.session_state.modulo_activo = st.session_state.menu_lateral_select
 
 st.sidebar.selectbox(
     "Seleccione un módulo:",
     modulos_lista,
-    key="menu_lateral_principal",
-    on_change=sincronizar_menu_lateral
+    index=index_actual,
+    key="menu_lateral_select",
+    on_change=actualizar_desde_sidebar
 )
 
 if st.session_state.modulo_activo != "Panel Principal":
-    st.button(
-        "⬅️ Regresar al menú principal",
-        key="btn_regresar_menu_principal",
-        use_container_width=True,
-        on_click=navegar_a,
-        args=("Panel Principal",)
-    )
+    if st.button("⬅️ Regresar al menú principal", use_container_width=True):
+        cambiar_modulo("Panel Principal")
     st.markdown("---")
 
 # ----------------- MÓDULOS DE TRABAJO -----------------
@@ -335,9 +327,8 @@ if st.session_state.modulo_activo == "Panel Principal":
                     <div class="card-desc-custom">Registro completo de datos de deportistas, EPS y cálculo nutricional.</div>
                 </div>
             ''', unsafe_allow_html=True)
-            if st.button("📁 Abrir Ficha e IMC", use_container_width=True, key="btn_m1"):
-                navegar_a("Ficha Integral del Deportista e IMC")
-                st.rerun()
+            if st.button("📁 Abrir Ficha e IMC", use_container_width=True, key="btn_card_imc"):
+                cambiar_modulo("Ficha Integral del Deportista e IMC")
 
             st.markdown('''
                 <div class="card-servicio bg-rojo">
@@ -345,9 +336,8 @@ if st.session_state.modulo_activo == "Panel Principal":
                     <div class="card-desc-custom">Fotografías, eventos institucionales y videoteca técnica del club.</div>
                 </div>
             ''', unsafe_allow_html=True)
-            if st.button("📸 Abrir Multimedia", use_container_width=True, key="btn_m3"):
-                navegar_a("Galería y Videos (Multimedia)")
-                st.rerun()
+            if st.button("📸 Abrir Multimedia", use_container_width=True, key="btn_card_multimedia"):
+                cambiar_modulo("Galería y Videos (Multimedia)")
 
             st.markdown('''
                 <div class="card-servicio bg-verde">
@@ -355,9 +345,17 @@ if st.session_state.modulo_activo == "Panel Principal":
                     <div class="card-desc-custom">Calendario interactivo de asistencia diaria por sesión.</div>
                 </div>
             ''', unsafe_allow_html=True)
-            if st.button("📊 Abrir Asistencia", use_container_width=True, key="btn_m5"):
-                navegar_a("Control de Asistencia")
-                st.rerun()
+            if st.button("📊 Abrir Asistencia", use_container_width=True, key="btn_card_asistencia"):
+                cambiar_modulo("Control de Asistencia")
+
+            st.markdown('''
+                <div class="card-servicio bg-morado">
+                    <div class="card-title-custom"><span class="badge-icon">07</span> Archivo de Documentos</div>
+                    <div class="card-desc-custom">Eventos, competencias, exámenes de ascenso y otros archivos.</div>
+                </div>
+            ''', unsafe_allow_html=True)
+            if st.button("📂 Abrir Archivo de Documentos", use_container_width=True, key="btn_card_documentos"):
+                cambiar_modulo("Archivo de Eventos, Competencias y Ascensos")
 
         with c_mod2:
             st.markdown('''
@@ -366,9 +364,8 @@ if st.session_state.modulo_activo == "Panel Principal":
                     <div class="card-desc-custom">Gestión completa de atletas, macroestructuras y documentos.</div>
                 </div>
             ''', unsafe_allow_html=True)
-            if st.button("🥋 Abrir Panel Coach", use_container_width=True, key="btn_m2"):
-                navegar_a("Panel General del Entrenador (Solo Coach)")
-                st.rerun()
+            if st.button("🥋 Abrir Panel Coach", use_container_width=True, key="btn_card_coach"):
+                cambiar_modulo("Panel General del Entrenador (Solo Coach)")
 
             st.markdown('''
                 <div class="card-servicio bg-amarillo">
@@ -376,9 +373,8 @@ if st.session_state.modulo_activo == "Panel Principal":
                     <div class="card-desc-custom">Gestión y borrado de cartas de deslinde de responsabilidad legal.</div>
                 </div>
             ''', unsafe_allow_html=True)
-            if st.button("📄 Abrir Exoneraciones", use_container_width=True, key="btn_m6"):
-                navegar_a("Cargar Fichas, Exoneraciones y PDFs")
-                st.rerun()
+            if st.button("📄 Abrir Exoneraciones", use_container_width=True, key="btn_card_exoneraciones"):
+                cambiar_modulo("Cargar Fichas, Exoneraciones y PDFs")
 
             st.markdown('''
                 <div class="card-servicio bg-azul">
@@ -386,9 +382,17 @@ if st.session_state.modulo_activo == "Panel Principal":
                     <div class="card-desc-custom">Estado de mensualidades, recibos oficiales y alertas de pagos.</div>
                 </div>
             ''', unsafe_allow_html=True)
-            if st.button("💰 Abrir Pagos", use_container_width=True, key="btn_m8"):
-                navegar_a("Pagos (Alerta)")
-                st.rerun()
+            if st.button("💰 Abrir Pagos", use_container_width=True, key="btn_card_pagos"):
+                cambiar_modulo("Pagos (Alerta)")
+
+            st.markdown('''
+                <div class="card-servicio bg-amarillo">
+                    <div class="card-title-custom"><span class="badge-icon">08</span> Agenda de Torneos</div>
+                    <div class="card-desc-custom">Calendario y registro de torneos y eventos próximos.</div>
+                </div>
+            ''', unsafe_allow_html=True)
+            if st.button("📅 Abrir Agenda", use_container_width=True, key="btn_card_agenda"):
+                cambiar_modulo("Agenda de Torneos y Eventos")
 
 elif st.session_state.modulo_activo == "Ficha Integral del Deportista e IMC":
     st.header("📋 Ficha Integral del Deportista y Cálculo de IMC")
@@ -474,7 +478,6 @@ elif st.session_state.modulo_activo == "Control de Asistencia":
                         if not asistencias_previas:
                             asistencias_previas = [header_a]
                         
-                        # Filtrar duplicados para la misma fecha y deportista
                         nuevas_asistencias = [row for row in asistencias_previas if not (row and row[0] == str(fecha_sesion))]
                         if len(nuevas_asistencias) == 0:
                             nuevas_asistencias = [header_a]
@@ -547,14 +550,18 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
     
     if opcion_multimedia == "Fotos del Club":
         st.subheader("📤 Subir Nueva Foto")
-        foto_subida = st.file_uploader("Seleccione la imagen", type=["jpg", "jpeg", "png"], key="subir_foto_dir")
-        if st.button("Guardar Foto", key="btn_save_f_dir"):
-            if foto_subida is not None:
-                ruta = FOTOS_CLUB_DIR / foto_subida.name
-                with open(ruta, "wb") as f:
-                    f.write(foto_subida.getbuffer())
-                st.success(f"¡Foto '{foto_subida.name}' guardada con éxito!")
-                st.rerun()
+        with st.form("form_subir_foto_multimedia"):
+            foto_subida = st.file_uploader("Seleccione la imagen", type=["jpg", "jpeg", "png"])
+            submit_foto = st.form_submit_button("Guardar Foto")
+            if submit_foto:
+                if foto_subida is not None:
+                    ruta = FOTOS_CLUB_DIR / foto_subida.name
+                    with open(ruta, "wb") as f:
+                        f.write(foto_subida.getbuffer())
+                    st.success(f"¡Foto '{foto_subida.name}' guardada con éxito!")
+                    st.rerun()
+                else:
+                    st.warning("Seleccione una imagen primero.")
                 
         st.markdown("---")
         st.subheader("🖼️ Galería de Fotografías")
@@ -562,25 +569,38 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
             lista_fotos = [f for f in os.listdir(FOTOS_CLUB_DIR) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
             if lista_fotos:
                 for foto_item in lista_fotos:
-                    st.image(str(FOTOS_CLUB_DIR / foto_item), caption=foto_item, width=300)
-                
-                foto_a_borrar = st.selectbox("Seleccione foto a eliminar:", lista_fotos, key="sel_f_borrar")
-                if st.button("❌ Eliminar Foto Seleccionada", key="btn_del_f_dir"):
-                    os.remove(FOTOS_CLUB_DIR / foto_a_borrar)
-                    st.success(f"La foto '{foto_a_borrar}' ha sido eliminada.")
-                    st.rerun()
+                    col_f1, col_f2 = st.columns([3, 1])
+                    with col_f1:
+                        st.image(str(FOTOS_CLUB_DIR / foto_item), caption=foto_item, width=300)
+                    with col_f2:
+                        if st.button("🗑️ Eliminar Foto", key=f"del_foto_{foto_item}"):
+                            st.session_state[f"confirm_del_foto_{foto_item}"] = True
+                        
+                        if st.session_state.get(f"confirm_del_foto_{foto_item}", False):
+                            st.warning(f"¿Confirma eliminar '{foto_item}'?")
+                            if st.button("Sí, eliminar definitivamente", key=f"yes_del_foto_{foto_item}"):
+                                (FOTOS_CLUB_DIR / foto_item).unlink()
+                                st.success("Foto eliminada correctamente.")
+                                st.rerun()
+                            if st.button("Cancelar", key=f"cancel_del_foto_{foto_item}"):
+                                st.session_state[f"confirm_del_foto_{foto_item}"] = False
+                                st.rerun()
             else:
                 st.info("No hay fotos guardadas aún.")
     else:
         st.subheader("📤 Subir Nuevo Vídeo")
-        video_subido = st.file_uploader("Seleccione el archivo de vídeo", type=["mp4", "mov", "avi"], key="subir_video_dir")
-        if st.button("Guardar Vídeo", key="btn_save_v_dir"):
-            if video_subido is not None:
-                ruta_v = VIDEOS_DIR / video_subido.name
-                with open(ruta_v, "wb") as f:
-                    f.write(video_subido.getbuffer())
-                st.success(f"¡Vídeo '{video_subido.name}' guardado con éxito!")
-                st.rerun()
+        with st.form("form_subir_video_multimedia"):
+            video_subido = st.file_uploader("Seleccione el archivo de vídeo", type=["mp4", "mov", "avi"])
+            submit_video = st.form_submit_button("Guardar Vídeo")
+            if submit_video:
+                if video_subido is not None:
+                    ruta_v = VIDEOS_DIR / video_subido.name
+                    with open(ruta_v, "wb") as f:
+                        f.write(video_subido.getbuffer())
+                    st.success(f"¡Vídeo '{video_subido.name}' guardado con éxito!")
+                    st.rerun()
+                else:
+                    st.warning("Seleccione un archivo de vídeo primero.")
                 
         st.markdown("---")
         st.subheader("🎥 Videoteca Técnica y Reproducción")
@@ -590,14 +610,103 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
                 for vid_item in lista_videos:
                     st.write(f"🎬 **{vid_item}**")
                     st.video(str(VIDEOS_DIR / vid_item))
-                
-                video_a_borrar = st.selectbox("Seleccione vídeo a eliminar:", lista_videos, key="sel_v_borrar")
-                if st.button("❌ Eliminar Vídeo Seleccionado", key="btn_del_v_dir"):
-                    os.remove(VIDEOS_DIR / video_a_borrar)
-                    st.success(f"El vídeo '{video_a_borrar}' ha sido eliminado.")
-                    st.rerun()
+                    
+                    if st.button("🗑️ Eliminar Vídeo", key=f"del_vid_{vid_item}"):
+                        st.session_state[f"confirm_del_vid_{vid_item}"] = True
+                    
+                    if st.session_state.get(f"confirm_del_vid_{vid_item}", False):
+                        st.warning(f"¿Confirma eliminar el vídeo '{vid_item}'?")
+                        if st.button("Sí, eliminar vídeo", key=f"yes_del_vid_{vid_item}"):
+                            (VIDEOS_DIR / vid_item).unlink()
+                            st.success("Vídeo eliminado correctamente.")
+                            st.rerun()
+                        if st.button("Cancelar", key=f"cancel_del_vid_{vid_item}"):
+                            st.session_state[f"confirm_del_vid_{vid_item}"] = False
+                            st.rerun()
+                    st.markdown("---")
             else:
                 st.info("No hay vídeos guardados aún.")
+
+elif st.session_state.modulo_activo == "Archivo de Eventos, Competencias y Ascensos":
+    st.header("📂 Archivo de Eventos, Competencias y Ascensos")
+    tab_doc_subir, tab_doc_ver = st.tabs(["Subir Documento / Archivo", "Consultar y Administrar Archivos"])
+    
+    with tab_doc_subir:
+        with st.form("form_subir_archivo_general"):
+            st.subheader("Subir Nuevo Documento al Archivo del Club")
+            cat_sel = st.selectbox("Categoría", CATEGORIAS_DOCUMENTOS)
+            nombre_doc = st.text_input("Nombre o Título del Documento")
+            desc_doc = st.text_area("Descripción (Opcional)")
+            fecha_doc = st.date_input("Fecha del Documento", value=datetime.now())
+            
+            archivo_subido = st.file_uploader(
+                "Seleccione el archivo (PDF, Word, Excel, Imágenes u otros formatos)",
+                type=["pdf", "docx", "doc", "xlsx", "xls", "csv", "jpg", "jpeg", "png", "txt"]
+            )
+            
+            submit_archivo_gen = st.form_submit_button("Subir Archivo al Sistema")
+            if submit_archivo_gen:
+                if nombre_doc and archivo_subido is not None:
+                    ext = archivo_subido.name.split('.')[-1]
+                    nombre_archivo_seguro = f"{nombre_doc.replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d%H%M%S')}.{ext}"
+                    carpeta_destino = ARCHIVO_DOCUMENTOS_DIR / cat_sel
+                    ruta_final = carpeta_destino / nombre_archivo_seguro
+                    
+                    with open(ruta_final, "wb") as f:
+                        f.write(archivo_subido.getbuffer())
+                        
+                    # Guardar metadatos en un archivo CSV interno para consulta detallada
+                    meta_path = ARCHIVO_DOCUMENTOS_DIR / "metadatos_archivos.csv"
+                    meta_exists = meta_path.exists()
+                    with open(meta_path, mode="a", newline="", encoding="utf-8") as fm:
+                        writer = csv.writer(fm)
+                        if not meta_exists:
+                            writer.writerow(["Categoria", "Nombre", "Descripcion", "Fecha", "NombreArchivo"])
+                        writer.writerow([cat_sel, nombre_doc, desc_doc, str(fecha_doc), nombre_archivo_seguro])
+                        
+                    st.success(f"¡El documento '{nombre_doc}' se ha guardado exitosamente en la categoría '{cat_sel}'!")
+                else:
+                    st.warning("Por favor ingrese el nombre del documento y adjunte un archivo.")
+
+    with tab_doc_ver:
+        st.subheader("Consulta y Gestión por Categorías")
+        cat_consulta = st.selectbox("Seleccione Categoría a Consultar", CATEGORIAS_DOCUMENTOS, key="sel_cat_consulta")
+        carpeta_cat = ARCHIVO_DOCUMENTOS_DIR / cat_consulta
+        
+        if carpeta_cat.exists():
+            archivos_en_cat = list(carpeta_cat.iterdir())
+            if archivos_en_cat:
+                for arch in archivos_en_cat:
+                    if arch.is_file():
+                        col_d1, col_d2, col_d3 = st.columns([2, 1, 1])
+                        with col_d1:
+                            st.write(f"📄 **{arch.name}**")
+                        with col_d2:
+                            with open(arch, "rb") as f_dl:
+                                st.download_button(
+                                    "⬇️ Descargar",
+                                    data=f_dl,
+                                    file_name=arch.name,
+                                    key=f"dl_gen_{arch.name}"
+                                )
+                        with col_d3:
+                            if st.button("🗑️ Eliminar", key=f"btn_del_arch_{arch.name}"):
+                                st.session_state[f"confirm_del_arch_{arch.name}"] = True
+                                
+                            if st.session_state.get(f"confirm_del_arch_{arch.name}", False):
+                                st.warning(f"¿Desea eliminar '{arch.name}'?")
+                                if st.button("Sí, borrar", key=f"yes_del_arch_{arch.name}"):
+                                    arch.unlink()
+                                    st.success("Archivo eliminado.")
+                                    st.rerun()
+                                if st.button("Cancelar", key=f"cancel_del_arch_{arch.name}"):
+                                    st.session_state[f"confirm_del_arch_{arch.name}"] = False
+                                    st.rerun()
+                st.markdown("---")
+            else:
+                st.info(f"No hay archivos almacenados en la categoría '{cat_consulta}'.")
+        else:
+            st.info("La carpeta de esta categoría no existe.")
 
 elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach)":
     st.header("⚙️ Panel General del Entrenador (Exclusivo Coach)")
@@ -676,7 +785,6 @@ elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach
 elif st.session_state.modulo_activo == "Pagos (Alerta)":
     st.header("💰 Control de Pagos y Recaudos del Club")
     
-    # Sistema automático de alarma para los primeros 5 días del mes
     dia_actual = datetime.now().day
     if dia_actual <= 5:
         st.warning(f"🚨 **¡AVISO INSTITUCIONAL DE MENSUALIDAD!** Nos encontramos en los primeros 5 días del mes (Día {dia_actual}). Por favor recuerde realizar el pago de su mensualidad a tiempo.")
