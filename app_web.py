@@ -95,33 +95,51 @@ def recuperar_credenciales(email_consulta):
                     return True, row[0], row[1]
     return False, None, None
 
-# ----------------- FONDO Y ESTILOS INSTITUCIONALES (jinsei.JPG) -----------------
+# ----------------- DIAGNOSTICO Y LOCALIZACIÓN DE FONDO (jinsei.JPG) -----------------
 def localizar_fotografia_fondo():
-    """Busca jinsei.JPG prioritariamente en assets y como segunda opción en la raíz."""
-    rutas_intentadas = [
-        Path(__file__).resolve().parent / "assets" / "jinsei.JPG",
-        Path(__file__).resolve().parent / "assets" / "jinsei.jpg",
-        Path(__file__).resolve().parent / "jinsei.JPG",
-        Path(__file__).resolve().parent / "jinsei.jpg"
+    """
+    Comprueba de forma estricta:
+    1. Ruta principal: assets/jinsei.JPG
+    2. Rutas alternativas de respaldo (assets/jinsei.jpg, raíz)
+    """
+    ruta_principal = BASE_DIR / "assets" / "jinsei.JPG"
+    if ruta_principal.exists():
+        return ruta_principal
+        
+    respaldos = [
+        BASE_DIR / "assets" / "jinsei.jpg",
+        BASE_DIR / "jinsei.JPG",
+        BASE_DIR / "jinsei.jpg"
     ]
-    for ruta in rutas_intentadas:
-        if ruta.exists():
-            return ruta
-    return rutas_intentadas
+    for r in respaldos:
+        if r.exists():
+            return r
+            
+    return None
 
 def aplicar_estilos_institucionales():
-    resultado = localizar_fotografia_fondo()
+    foto_bg_path = localizar_fotografia_fondo()
     imagen_css = ""
     
-    if isinstance(resultado, Path):
-        foto_bg_path = resultado
+    if foto_bg_path and foto_bg_path.exists():
         with open(foto_bg_path, "rb") as archivo:
             encoded_bg = base64.b64encode(archivo.read()).decode("ascii")
         mime = "image/png" if foto_bg_path.suffix.lower() == ".png" else "image/jpeg"
         imagen_css = f'url("data:{mime};base64,{encoded_bg}")'
     else:
-        rutas_str = "\n- ".join([str(p) for p in resultado])
-        st.error(f"⚠️ ERROR CRÍTICO: No se encontró el archivo de fondo 'jinsei.JPG'. Se intentaron las siguientes rutas sin éxito:\n- {rutas_str}")
+        archivos_en_assets = []
+        if ASSETS_DIR.exists():
+            archivos_en_assets = [f.name for f in ASSETS_DIR.iterdir()]
+        else:
+            archivos_en_assets = ["La carpeta 'assets' no existe en el servidor."]
+            
+        st.error(
+            f"⚠️ **DIAGNÓSTICO DE ERROR DE FONDO:**\n\n"
+            f"- **Ubicación de app_web.py:** `{BASE_DIR}`\n"
+            f"- **Ruta principal verificada:** `{BASE_DIR / 'assets' / 'jinsei.JPG'}` (No encontrada)\n"
+            f"- **Archivos reales encontrados en la carpeta 'assets':** `{archivos_en_assets}`\n\n"
+            f"*Verifique que el archivo 'jinsei.JPG' esté escrito exactamente con esa extensión en su repositorio de GitHub y no esté bloqueado por .gitignore.*"
+        )
 
     css = f"""
     <style>
@@ -184,13 +202,13 @@ def localizar_logo():
     return None
 
 def mostrar_encabezado_institucional(titulo_modulo=""):
-    """Función global reutilizable con logo oficial agrandado (115px) y nombre del club."""
+    """Función global reutilizable con logo oficial aumentado a ~140px de alto y alineado verticalmente."""
     logo_file = localizar_logo()
 
-    col_logo, col_titulo = st.columns([0.12, 3.88], vertical_alignment="center")
+    col_logo, col_titulo = st.columns([0.16, 3.84], vertical_alignment="center")
     with col_logo:
         if logo_file and logo_file.exists():
-            st.image(str(logo_file), width=115)
+            st.image(str(logo_file), width=140)
     with col_titulo:
         if titulo_modulo:
             st.markdown(f"<h2 style='color:#1E3A8A; margin:0;'>JINSEI Club de Taekwondo Tenjo — <span style='font-size: 20px; color: #334155;'>{titulo_modulo}</span></h2>", unsafe_allow_html=True)
@@ -206,10 +224,10 @@ if not st.session_state.autenticado:
     with col_centro:
         logo_file = localizar_logo()
 
-        col_logo_l, col_tit_l = st.columns([0.3, 0.7], vertical_alignment="center")
+        col_logo_l, col_tit_l = st.columns([0.35, 0.65], vertical_alignment="center")
         with col_logo_l:
             if logo_file and logo_file.exists():
-                st.image(str(logo_file), width=110)
+                st.image(str(logo_file), width=140)
         with col_tit_l:
             st.markdown("<h2 style='color:#1E3A8A; margin:0; line-height: 1.1;'>JINSEI</h2><p style='color:#475569; margin:0; font-size: 14px;'>Taekwondo Tenjo</p>", unsafe_allow_html=True)
             
