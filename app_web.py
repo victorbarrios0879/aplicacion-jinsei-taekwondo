@@ -194,19 +194,33 @@ def localizar_logo():
             return c
     return None
 
-def mostrar_encabezado_institucional(titulo_modulo=""):
-    logo_file = localizar_logo()
+def obtener_logo_base64():
+    logo_path = localizar_logo()
+    if logo_path and logo_path.exists():
+        with open(logo_path, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode("ascii")
+        mime = "image/png" if logo_path.suffix.lower() == ".png" else "image/jpeg"
+        return f"data:{mime};base64,{encoded}"
+    return ""
 
-    col_logo, col_titulo = st.columns([0.22, 3.78], vertical_alignment="center")
-    with col_logo:
-        if logo_file and logo_file.exists():
-            st.image(str(logo_file), width=200)
-    with col_titulo:
-        if titulo_modulo:
-            st.markdown(f"<h2 style='color:#1E3A8A; margin:0;'>JINSEI Club de Taekwondo Tenjo — <span style='font-size: 20px; color: #334155;'>{titulo_modulo}</span></h2>", unsafe_allow_html=True)
-        else:
-            st.markdown("<h2 style='color:#1E3A8A; margin:0;'>JINSEI Club de Taekwondo Tenjo</h2>", unsafe_allow_html=True)
-    st.markdown("---")
+def mostrar_encabezado_institucional(titulo_modulo=""):
+    """Función global reutilizable con logo institucional fijo a 260px de altura real."""
+    logo_base64 = obtener_logo_base64()
+    
+    img_html = f'<img src="{logo_base64}" style="height: 260px; width: auto; max-width: 100%; display: block;" />' if logo_base64 else '🥋'
+    
+    titulo_texto = f"JINSEI Club de Taekwondo Tenjo — <span style='font-size: 22px; color: #334155;'>{titulo_modulo}</span>" if titulo_modulo else "JINSEI Club de Taekwondo Tenjo"
+    
+    header_html = f"""
+    <div style="display: flex; align-items: center; gap: 25px; margin-bottom: 20px; flex-wrap: wrap;">
+        <div>{img_html}</div>
+        <div>
+            <h1 style="color: #1E3A8A; margin: 0; font-size: 32px; line-height: 1.2;">{titulo_texto}</h1>
+        </div>
+    </div>
+    <hr style="margin-top: 5px; margin-bottom: 25px;">
+    """
+    st.markdown(header_html, unsafe_allow_html=True)
 
 # ----------------- AUTENTICACIÓN Y LOGIN -----------------
 if not st.session_state.autenticado:
@@ -214,16 +228,20 @@ if not st.session_state.autenticado:
     _, col_centro, _ = st.columns([1, 1.4, 1])
 
     with col_centro:
-        logo_file = localizar_logo()
+        logo_base64 = obtener_logo_base64()
+        img_login_html = f'<img src="{logo_base64}" style="height: 220px; width: auto; max-width: 100%; display: block;" />' if logo_base64 else '🥋'
 
-        col_logo_l, col_tit_l = st.columns([0.4, 0.6], vertical_alignment="center")
-        with col_logo_l:
-            if logo_file and logo_file.exists():
-                st.image(str(logo_file), width=200)
-        with col_tit_l:
-            st.markdown("<h2 style='color:#1E3A8A; margin:0; line-height: 1.1;'>JINSEI</h2><p style='color:#475569; margin:0; font-size: 14px;'>Taekwondo Tenjo</p>", unsafe_allow_html=True)
-            
-        st.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
+        login_header_html = f"""
+        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 10px;">
+            <div>{img_login_html}</div>
+            <div>
+                <h2 style="color: #1E3A8A; margin: 0; line-height: 1.1; font-size: 28px;">JINSEI</h2>
+                <p style="color: #475569; margin: 0; font-size: 15px;">Taekwondo Tenjo</p>
+            </div>
+        </div>
+        <hr style="margin: 15px 0;">
+        """
+        st.markdown(login_header_html, unsafe_allow_html=True)
 
         tab1, tab2, tab3 = st.tabs(["🔑 Ingresar", "📝 Registrarse", "❓ Recuperar"])
 
