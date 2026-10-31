@@ -976,12 +976,48 @@ elif st.session_state.modulo_activo == "Pagos (Alerta)":
                     atleta_rec = st.selectbox("Seleccionar Atleta con Pago al Día:", nombres_pagados)
                     for r in pagados:
                         if r[0] == atleta_rec:
-                            recibo_texto = f"""
-=====================================================
-        CLUB JINSEI TAEKWONDO TENJO
-     RECIBO OFICIAL DE PAGO DE MENSUALIDAD
-=====================================================
-Deportista: {r[0]}
-Estado: {r[1]}
-Fecha de Pago: {r[2]}
-Valor: {r[3]}
+                            recibo_texto = (
+                                "=====================================================\n"
+                                "        CLUB JINSEI TAEKWONDO TENJO\n"
+                                "     RECIBO OFICIAL DE PAGO DE MENSUALIDAD\n"
+                                "=====================================================\n"
+                                f"Deportista: {r[0]}\n"
+                                f"Estado: {r[1]}\n"
+                                f"Fecha de Pago: {r[2]}\n"
+                                f"Valor: {r[3]}\n"
+                                f"Medio Utilizado: {r[4]}\n"
+                                "-----------------------------------------------------\n"
+                                "Sede: Tenjo, Cundinamarca — Vereda Chincé, Sector Zoque\n"
+                                f"Teléfono de Pagos: {NUMERO_PAGOS_DIGITALES}\n"
+                                "¡Gracias por su puntualidad y apoyo al club!\n"
+                                "====================================================="
+                            )
+                            st.text_area("Comprobante Oficial Generado", recibo_texto, height=220)
+                            st.download_button(
+                                "⬇️ Descargar recibo",
+                                data=recibo_texto,
+                                file_name=f"recibo_{atleta_rec.replace(' ', '_')}.txt",
+                                mime="text/plain",
+                                key=f"descargar_recibo_{atleta_rec}"
+                            )
+                else:
+                    st.info("No hay pagos al día para generar recibos.")
+        else:
+            st.info("Aún no hay registros de pagos.")
+
+elif st.session_state.modulo_activo == "Agenda de Torneos y Eventos":
+    mostrar_encabezado_institucional("Agenda de Torneos y Eventos")
+    with st.form("form_agenda_ev"):
+        nom_ev = st.text_input("Nombre del Torneo, Examen o Evento")
+        fec_ev = st.date_input("Fecha del Evento")
+        sub_ev = st.form_submit_button("Registrar en Agenda")
+        if sub_ev:
+            if nom_ev:
+                with open(ARCHIVO_EVENTOS, mode="a", newline="", encoding="utf-8") as fe:
+                    csv.writer(fe).writerows([[nom_ev, str(fec_ev)]])
+                st.success("¡Evento agregado a la agenda!")
+    if os.path.exists(ARCHIVO_EVENTOS):
+        with open(ARCHIVO_EVENTOS, mode="r", encoding="utf-8") as fe:
+            for r in csv.reader(fe):
+                if r:
+                    st.write(f"🏆 **{r[0]}** — Fecha: {r[1]}")
