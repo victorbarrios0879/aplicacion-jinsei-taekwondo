@@ -95,33 +95,53 @@ def recuperar_credenciales(email_consulta):
                     return True, row[0], row[1]
     return False, None, None
 
-# ----------------- FONDO Y ESTILOS INSTITUCIONALES (jinsei.JPG) -----------------
+# ----------------- DIAGNOSTICO Y LOCALIZACIÓN DE FONDO (jinsei.JPG) -----------------
 def localizar_fotografia_fondo():
-    """Busca jinsei.JPG prioritariamente en assets y como segunda opción en la raíz."""
-    rutas_intentadas = [
-        Path(__file__).resolve().parent / "assets" / "jinsei.JPG",
-        Path(__file__).resolve().parent / "assets" / "jinsei.jpg",
-        Path(__file__).resolve().parent / "jinsei.JPG",
-        Path(__file__).resolve().parent / "jinsei.jpg"
+    """
+    Comprueba de forma estricta:
+    1. Ruta principal: assets/jinsei.JPG
+    2. Rutas alternativas de respaldo (assets/jinsei.jpg, raíz)
+    """
+    ruta_principal = BASE_DIR / "assets" / "jinsei.JPG"
+    if ruta_principal.exists():
+        return ruta_principal
+        
+    # Opciones secundarias por si hay variación de minúsculas o ubicación en raíz
+    respaldos = [
+        BASE_DIR / "assets" / "jinsei.jpg",
+        BASE_DIR / "jinsei.JPG",
+        BASE_DIR / "jinsei.jpg"
     ]
-    for ruta in rutas_intentadas:
-        if ruta.exists():
-            return ruta
-    return rutas_intentadas
+    for r in respaldos:
+        if r.exists():
+            return r
+            
+    return None
 
 def aplicar_estilos_institucionales():
-    resultado = localizar_fotografia_fondo()
+    foto_bg_path = localizar_fotografia_fondo()
     imagen_css = ""
     
-    if isinstance(resultado, Path):
-        foto_bg_path = resultado
+    if foto_bg_path and foto_bg_path.exists():
         with open(foto_bg_path, "rb") as archivo:
             encoded_bg = base64.b64encode(archivo.read()).decode("ascii")
         mime = "image/png" if foto_bg_path.suffix.lower() == ".png" else "image/jpeg"
         imagen_css = f'url("data:{mime};base64,{encoded_bg}")'
     else:
-        rutas_str = "\n- ".join([str(p) for p in resultado])
-        st.error(f"⚠️ ERROR CRÍTICO: No se encontró el archivo de fondo 'jinsei.JPG'. Se intentaron las siguientes rutas sin éxito:\n- {rutas_str}")
+        # Diagnóstico detallado para mostrar en pantalla qué contiene la carpeta assets
+        archivos_en_assets = []
+        if ASSETS_DIR.exists():
+            archivos_en_assets = [f.name for f in ASSETS_DIR.iterdir()]
+        else:
+            archivos_en_assets = ["La carpeta 'assets' no existe en el servidor."]
+            
+        st.error(
+            f"⚠️ **DIAGNÓSTICO DE ERROR DE FONDO:**\n\n"
+            f"- **Ubicación de app_web.py:** `{BASE_DIR}`\n"
+            f"- **Ruta principal verificada:** `{BASE_DIR / 'assets' / 'jinsei.JPG'}` (No encontrada)\n"
+            f"- **Archivos reales encontrados en la carpeta 'assets':** `{archivos_en_assets}`\n\n"
+            f"*Verifique que el archivo 'jinsei.JPG' esté escrito exactamente con esa extensión en su repositorio de GitHub y no esté bloqueado por .gitignore.*"
+        )
 
     css = f"""
     <style>
