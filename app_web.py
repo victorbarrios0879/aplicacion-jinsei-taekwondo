@@ -460,7 +460,7 @@ elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
                         st.write(f"📄 `{archivo.name}`")
                     with col_v2:
                         with open(archivo, "rb") as f_dl:
-                            st.download_button("⬇️ Descargar", data=f_dl, file_name=archivo.name, mime="application/pdf", key=f"dl_usr_{archivo.name}")
+                            st.download_button("Descargar", data=f_dl, file_name=archivo.name, mime="application/pdf", key=f"dl_usr_{archivo.name}")
             else:
                 st.info("No hay documentos de exoneración cargados todavía.")
 
@@ -716,4 +716,25 @@ Teléfono de Pagos: {NUMERO_PAGOS_DIGITALES}
 =====================================================
                             """
                             st.text_area("Comprobante Oficial Generado", recibo_texto, height=220)
-                            st.download_button("⬇️ Descargar
+                            st.download_button("Descargar Recibo Oficial (.TXT)", data=recibo_texto, file_name=f"recibo_{r[0].replace(' ', '_')}.txt", mime="text/plain")
+                else:
+                    st.info("No hay deportistas con estado 'Pagado / Al Día' para generar recibo.")
+        else:
+            st.info("No hay registros de pagos.")
+
+elif st.session_state.modulo_activo == "Agenda de Torneos y Eventos":
+    st.header("📅 Agenda de Torneos y Eventos")
+    with st.form("form_agenda_ev"):
+        nom_ev = st.text_input("Nombre del Torneo, Examen o Evento")
+        fec_ev = st.date_input("Fecha del Evento")
+        sub_ev = st.form_submit_button("Registrar en Agenda")
+        if sub_ev:
+            if nom_ev:
+                with open(ARCHIVO_EVENTOS, mode="a", newline="", encoding="utf-8") as fe:
+                    csv.writer(fe).writerows([[nom_ev, str(fec_ev)]])
+                st.success("¡Evento agregado a la agenda!")
+    if os.path.exists(ARCHIVO_EVENTOS):
+        with open(ARCHIVO_EVENTOS, mode="r", encoding="utf-8") as fe:
+            for r in csv.reader(fe):
+                if r:
+                    st.write(f"🏆 **{r[0]}** — Fecha: {r[1]}")
