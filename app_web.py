@@ -16,6 +16,15 @@ if "modulo_activo" not in st.session_state:
 if "usuario_actual" not in st.session_state:
     st.session_state.usuario_actual = ""
 
+def navegar_a(modulo):
+    """Mantiene sincronizados el módulo activo y el selector lateral."""
+    st.session_state.modulo_activo = modulo
+    st.session_state.menu_lateral_principal = modulo
+
+
+def sincronizar_menu_lateral():
+    st.session_state.modulo_activo = st.session_state.menu_lateral_principal
+
 st.set_page_config(
     page_title="Jinsei Taekwondo Tenjo - Panel Principal",
     page_icon="🥋",
@@ -85,23 +94,57 @@ def recuperar_credenciales(email_consulta):
     return False, None, None
 
 # ESTILOS INSTITUCIONALES Y FONDO CON FOTO DE DEPORTISTAS (foto.JPG)
+def localizar_fotografia_fondo():
+    """Busca foto.JPG en la raíz del proyecto y en assets, sin asumir otra ubicación."""
+    candidatos = [
+        BASE_DIR / "foto.JPG",
+        ASSETS_DIR / "foto.JPG",
+        BASE_DIR / "foto.jpg",
+        ASSETS_DIR / "foto.jpg",
+    ]
+    for candidato in candidatos:
+        if candidato.is_file():
+            return candidato
+
+    # Búsqueda tolerante a mayúsculas/minúsculas en esas dos ubicaciones.
+    for carpeta in (BASE_DIR, ASSETS_DIR):
+        if carpeta.is_dir():
+            for archivo in carpeta.iterdir():
+                if archivo.is_file() and archivo.name.lower() == "foto.jpg":
+                    return archivo
+    return None
+
+
 def aplicar_estilos_institucionales():
-    foto_bg_path = BASE_DIR / "foto.JPG"
-    if not foto_bg_path.exists():
-        foto_bg_path = ASSETS_DIR / "foto.JPG"
-        
-    encoded_bg = ""
-    if foto_bg_path.exists():
-        with open(foto_bg_path, "rb") as f:
-            encoded_bg = base64.b64encode(f.read()).decode()
-            
+    foto_bg_path = localizar_fotografia_fondo()
+    imagen_css = ""
+    if foto_bg_path:
+        with open(foto_bg_path, "rb") as archivo:
+            encoded_bg = base64.b64encode(archivo.read()).decode("ascii")
+        mime = "image/png" if foto_bg_path.suffix.lower() == ".png" else "image/jpeg"
+        imagen_css = f'url("data:{mime};base64,{encoded_bg}")'
+    else:
+        st.warning(
+            "No se encontró foto.JPG. Coloca el archivo en la misma carpeta "
+            "que app_web.py para utilizarlo como fondo."
+        )
+
     css = f"""
     <style>
     .stApp {{
-        background-image: linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.88)), url("data:image/jpeg;base64,{encoded_bg}");
+        background-image:
+            linear-gradient(rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.58)),
+            {imagen_css if imagen_css else "none"};
         background-size: cover;
-        background-position: center;
+        background-position: center center;
+        background-repeat: no-repeat;
         background-attachment: fixed;
+    }}
+    [data-testid="stHeader"], [data-testid="stToolbar"] {{
+        background: rgba(255,255,255,0.15);
+    }}
+    [data-testid="stMain"], [data-testid="stMainBlockContainer"] {{
+        background-color: transparent;
     }}
     .card-servicio {{
         border-radius: 12px;
@@ -133,13 +176,20 @@ if not st.session_state.autenticado:
         if not logo_file.exists():
             logo_file = BASE_DIR / "logo.png"
 
-        # Encabezado con Logo a la izquierda y Nombre alineados horizontalmente
-        col_logo, col_titulo = st.columns([1, 3])
+        # Logo institucional a la izquierda y nombre del club alineado a su derecha.
+        col_logo, col_titulo = st.columns([0.8, 3.2], vertical_alignment="center")
         with col_logo:
             if logo_file.exists():
-                st.image(str(logo_file), width=90)
+                st.image(str(logo_file), width=105)
+            else:
+                st.warning("No se encontró logo.png en la carpeta raíz ni en assets.")
         with col_titulo:
-            st.markdown("<h2 style='color: #1E3A8A; margin-top: 10px;'>Club Jinsei Taekwondo Tenjo</h2>", unsafe_allow_html=True)
+            st.markdown(
+                "<div style='display:flex;align-items:center;min-height:105px;'>"
+                "<h2 style='color:#1E3A8A;margin:0;line-height:1.2;'>"
+                "JINSEI Club de Taekwondo Tenjo</h2></div>",
+                unsafe_allow_html=True
+            )
             
         st.markdown("<p style='text-align: center; color: #475569;'>Sistema oficial de gestión deportiva y administrativa</p>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
@@ -233,13 +283,28 @@ try:
 except ValueError:
     index_actual = 0
 
-modulo_seleccionado = st.sidebar.selectbox("Seleccione un módulo:", modulos_lista, index=index_actual, key="menu_lateral_principal")
-st.session_state.modulo_activo = modulo_seleccionado
+# Sincronizar el valor del selector antes de dibujarlo evita que Streamlit
+# restaure una selección anterior y sobrescriba el módulo abierto desde una tarjeta.
+if st.session_state.get("menu_lateral_principal") not in modulos_lista:
+    st.session_state.menu_lateral_principal = st.session_state.modulo_activo
+else:
+    st.session_state.menu_lateral_principal = st.session_state.modulo_activo
+
+st.sidebar.selectbox(
+    "Seleccione un módulo:",
+    modulos_lista,
+    key="menu_lateral_principal",
+    on_change=sincronizar_menu_lateral
+)
 
 if st.session_state.modulo_activo != "Panel Principal":
-    if st.button("⬅️ Volver al Panel Principal"):
-        st.session_state.modulo_activo = "Panel Principal"
-        st.rerun()
+    st.button(
+        "⬅️ Regresar al menú principal",
+        key="btn_regresar_menu_principal",
+        use_container_width=True,
+        on_click=navegar_a,
+        args=("Panel Principal",)
+    )
     st.markdown("---")
 
 # ----------------- MÓDULOS DE TRABAJO -----------------
@@ -275,7 +340,7 @@ if st.session_state.modulo_activo == "Panel Principal":
                 </div>
             ''', unsafe_allow_html=True)
             if st.button("📁 Abrir Ficha e IMC", use_container_width=True, key="btn_m1"):
-                st.session_state.modulo_activo = "Ficha Integral del Deportista e IMC"
+                navegar_a("Ficha Integral del Deportista e IMC")
                 st.rerun()
 
             st.markdown('''
@@ -285,7 +350,7 @@ if st.session_state.modulo_activo == "Panel Principal":
                 </div>
             ''', unsafe_allow_html=True)
             if st.button("📸 Abrir Multimedia", use_container_width=True, key="btn_m3"):
-                st.session_state.modulo_activo = "Galería y Videos (Multimedia)"
+                navegar_a("Galería y Videos (Multimedia)")
                 st.rerun()
 
             st.markdown('''
@@ -295,7 +360,7 @@ if st.session_state.modulo_activo == "Panel Principal":
                 </div>
             ''', unsafe_allow_html=True)
             if st.button("📊 Abrir Asistencia", use_container_width=True, key="btn_m5"):
-                st.session_state.modulo_activo = "Control de Asistencia"
+                navegar_a("Control de Asistencia")
                 st.rerun()
 
         with c_mod2:
@@ -306,7 +371,7 @@ if st.session_state.modulo_activo == "Panel Principal":
                 </div>
             ''', unsafe_allow_html=True)
             if st.button("🥋 Abrir Panel Coach", use_container_width=True, key="btn_m2"):
-                st.session_state.modulo_activo = "Panel General del Entrenador (Solo Coach)"
+                navegar_a("Panel General del Entrenador (Solo Coach)")
                 st.rerun()
 
             st.markdown('''
@@ -316,7 +381,7 @@ if st.session_state.modulo_activo == "Panel Principal":
                 </div>
             ''', unsafe_allow_html=True)
             if st.button("📄 Abrir Exoneraciones", use_container_width=True, key="btn_m6"):
-                st.session_state.modulo_activo = "Cargar Fichas, Exoneraciones y PDFs"
+                navegar_a("Cargar Fichas, Exoneraciones y PDFs")
                 st.rerun()
 
             st.markdown('''
@@ -326,7 +391,7 @@ if st.session_state.modulo_activo == "Panel Principal":
                 </div>
             ''', unsafe_allow_html=True)
             if st.button("💰 Abrir Pagos", use_container_width=True, key="btn_m8"):
-                st.session_state.modulo_activo = "Pagos (Alerta)"
+                navegar_a("Pagos (Alerta)")
                 st.rerun()
 
 elif st.session_state.modulo_activo == "Ficha Integral del Deportista e IMC":
@@ -460,7 +525,7 @@ elif st.session_state.modulo_activo == "Cargar Fichas, Exoneraciones y PDFs":
                         st.write(f"📄 `{archivo.name}`")
                     with col_v2:
                         with open(archivo, "rb") as f_dl:
-                            st.download_button("Descargar", data=f_dl, file_name=archivo.name, mime="application/pdf", key=f"dl_usr_{archivo.name}")
+                            st.download_button("⬇️ Descargar", data=f_dl, file_name=archivo.name, mime="application/pdf", key=f"dl_usr_{archivo.name}")
             else:
                 st.info("No hay documentos de exoneración cargados todavía.")
 
@@ -716,25 +781,14 @@ Teléfono de Pagos: {NUMERO_PAGOS_DIGITALES}
 =====================================================
                             """
                             st.text_area("Comprobante Oficial Generado", recibo_texto, height=220)
-                            st.download_button("Descargar Recibo Oficial (.TXT)", data=recibo_texto, file_name=f"recibo_{r[0].replace(' ', '_')}.txt", mime="text/plain")
+                            st.download_button(
+                                "⬇️ Descargar recibo",
+                                data=recibo_texto,
+                                file_name=f"recibo_{atleta_rec.replace(' ', '_')}.txt",
+                                mime="text/plain",
+                                key=f"descargar_recibo_{atleta_rec}"
+                            )
                 else:
-                    st.info("No hay deportistas con estado 'Pagado / Al Día' para generar recibo.")
+                    st.info("No hay pagos al día para generar recibos.")
         else:
-            st.info("No hay registros de pagos.")
-
-elif st.session_state.modulo_activo == "Agenda de Torneos y Eventos":
-    st.header("📅 Agenda de Torneos y Eventos")
-    with st.form("form_agenda_ev"):
-        nom_ev = st.text_input("Nombre del Torneo, Examen o Evento")
-        fec_ev = st.date_input("Fecha del Evento")
-        sub_ev = st.form_submit_button("Registrar en Agenda")
-        if sub_ev:
-            if nom_ev:
-                with open(ARCHIVO_EVENTOS, mode="a", newline="", encoding="utf-8") as fe:
-                    csv.writer(fe).writerows([[nom_ev, str(fec_ev)]])
-                st.success("¡Evento agregado a la agenda!")
-    if os.path.exists(ARCHIVO_EVENTOS):
-        with open(ARCHIVO_EVENTOS, mode="r", encoding="utf-8") as fe:
-            for r in csv.reader(fe):
-                if r:
-                    st.write(f"🏆 **{r[0]}** — Fecha: {r[1]}")
+            st.info("Aún no hay registros de pagos.")
