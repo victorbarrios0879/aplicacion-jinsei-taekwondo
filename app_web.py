@@ -23,7 +23,7 @@ def cambiar_modulo(nuevo_modulo):
 
 st.set_page_config(
     page_title="Jinsei Taekwondo Tenjo - Panel Principal",
-    page_icon="🥋",
+    page_icon="🥋assets/logo.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -97,7 +97,7 @@ def recuperar_credenciales(email_consulta):
 
 # ----------------- FONDO Y ESTILOS INSTITUCIONALES (jinsei.JPG) -----------------
 def localizar_fotografia_fondo():
-    """Busca exactamente el archivo jinsei.JPG en la carpeta raíz del proyecto."""
+    """Busca exactamente el archivo assets/jinsei.JPG en la carpeta raíz del proyecto."""
     candidato = BASE_DIR / "jinsei.JPG"
     if candidato.is_file():
         return candidato
