@@ -23,7 +23,7 @@ def cambiar_modulo(nuevo_modulo):
 
 st.set_page_config(
     page_title="Jinsei Taekwondo Tenjo - Panel Principal",
-    page_icon="🥋assets/logo.png",
+    page_icon="🥋",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -97,26 +97,31 @@ def recuperar_credenciales(email_consulta):
 
 # ----------------- FONDO Y ESTILOS INSTITUCIONALES (jinsei.JPG) -----------------
 def localizar_fotografia_fondo():
-    """Busca exactamente el archivo assets/jinsei.JPG en la carpeta raíz del proyecto."""
-    candidato = BASE_DIR / "jinsei.JPG"
-    if candidato.is_file():
-        return candidato
-    if BASE_DIR.is_dir():
-        for archivo in BASE_DIR.iterdir():
-            if archivo.is_file() and archivo.name.lower() == "jinsei.jpg":
-                return archivo
-    return None
+    """Busca jinsei.JPG prioritariamente en assets y como segunda opción en la raíz."""
+    rutas_intentadas = [
+        Path(__file__).resolve().parent / "assets" / "jinsei.JPG",
+        Path(__file__).resolve().parent / "assets" / "jinsei.jpg",
+        Path(__file__).resolve().parent / "jinsei.JPG",
+        Path(__file__).resolve().parent / "jinsei.jpg"
+    ]
+    for ruta in rutas_intentadas:
+        if ruta.exists():
+            return ruta
+    return rutas_intentadas
 
 def aplicar_estilos_institucionales():
-    foto_bg_path = localizar_fotografia_fondo()
+    resultado = localizar_fotografia_fondo()
     imagen_css = ""
-    if foto_bg_path:
+    
+    if isinstance(resultado, Path):
+        foto_bg_path = resultado
         with open(foto_bg_path, "rb") as archivo:
             encoded_bg = base64.b64encode(archivo.read()).decode("ascii")
         mime = "image/png" if foto_bg_path.suffix.lower() == ".png" else "image/jpeg"
         imagen_css = f'url("data:{mime};base64,{encoded_bg}")'
     else:
-        st.error(f"⚠️ ERROR CRÍTICO: No se encontró el archivo de fondo 'jinsei.JPG' en la ruta exacta: {BASE_DIR / 'jinsei.JPG'}. Colóquelo en la carpeta raíz del proyecto.")
+        rutas_str = "\n- ".join([str(p) for p in resultado])
+        st.error(f"⚠️ ERROR CRÍTICO: No se encontró el archivo de fondo 'jinsei.JPG'. Se intentaron las siguientes rutas sin éxito:\n- {rutas_str}")
 
     css = f"""
     <style>
@@ -136,7 +141,7 @@ def aplicar_estilos_institucionales():
         background-color: transparent;
     }}
     .login-container {{
-        background: rgba(255, 255, 255, 0.88);
+        background: rgba(255, 255, 255, 0.90);
         padding: 30px;
         border-radius: 14px;
         box-shadow: 0 8px 20px rgba(0,0,0,0.15);
@@ -165,16 +170,27 @@ def aplicar_estilos_institucionales():
 
 aplicar_estilos_institucionales()
 
-def mostrar_encabezado_institucional(titulo_modulo=""):
-    """Función reutilizable para mostrar el logo oficial en gran tamaño y el nombre del club en todos los módulos."""
-    logo_file = ASSETS_DIR / "logo.png"
-    if not logo_file.exists():
-        logo_file = BASE_DIR / "logo.png"
+def localizar_logo():
+    """Busca el archivo oficial logo.png de manera flexible."""
+    candidatos = [
+        ASSETS_DIR / "logo.png",
+        ASSETS_DIR / "LOGO.png",
+        BASE_DIR / "logo.png",
+        BASE_DIR / "LOGO.png"
+    ]
+    for c in candidatos:
+        if c.is_file():
+            return c
+    return None
 
-    col_logo, col_titulo = st.columns([0.1, 3.9], vertical_alignment="center")
+def mostrar_encabezado_institucional(titulo_modulo=""):
+    """Función global reutilizable con logo oficial agrandado (115px) y nombre del club."""
+    logo_file = localizar_logo()
+
+    col_logo, col_titulo = st.columns([0.12, 3.88], vertical_alignment="center")
     with col_logo:
-        if logo_file.exists():
-            st.image(str(logo_file), width=90)
+        if logo_file and logo_file.exists():
+            st.image(str(logo_file), width=115)
     with col_titulo:
         if titulo_modulo:
             st.markdown(f"<h2 style='color:#1E3A8A; margin:0;'>JINSEI Club de Taekwondo Tenjo — <span style='font-size: 20px; color: #334155;'>{titulo_modulo}</span></h2>", unsafe_allow_html=True)
@@ -188,16 +204,14 @@ if not st.session_state.autenticado:
     _, col_centro, _ = st.columns([1, 1.4, 1])
 
     with col_centro:
-        logo_file = ASSETS_DIR / "logo.png"
-        if not logo_file.exists():
-            logo_file = BASE_DIR / "logo.png"
+        logo_file = localizar_logo()
 
         col_logo_l, col_tit_l = st.columns([0.3, 0.7], vertical_alignment="center")
         with col_logo_l:
-            if logo_file.exists():
-                st.image(str(logo_file), width=85)
+            if logo_file and logo_file.exists():
+                st.image(str(logo_file), width=110)
         with col_tit_l:
-            st.markdown("<h3 style='color:#1E3A8A; margin:0; line-height: 1.1;'>JINSEI</h3><p style='color:#475569; margin:0; font-size: 13px;'>Taekwondo Tenjo</p>", unsafe_allow_html=True)
+            st.markdown("<h2 style='color:#1E3A8A; margin:0; line-height: 1.1;'>JINSEI</h2><p style='color:#475569; margin:0; font-size: 14px;'>Taekwondo Tenjo</p>", unsafe_allow_html=True)
             
         st.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
 
@@ -262,10 +276,8 @@ if st.sidebar.button("🚪 Cerrar Sesión"):
     st.rerun()
 
 st.sidebar.info("Jinsei Taekwondo — Tenjo")
-logo_lateral = ASSETS_DIR / "logo.png"
-if not logo_lateral.exists():
-    logo_lateral = BASE_DIR / "logo.png"
-if logo_lateral.exists():
+logo_lateral = localizar_logo()
+if logo_lateral and logo_lateral.exists():
     st.sidebar.image(str(logo_lateral), use_container_width=True)
 
 st.sidebar.markdown(f"📱 **Contacto / Pagos:**\n`{NUMERO_PAGOS_DIGITALES}`")
