@@ -97,11 +97,6 @@ def recuperar_credenciales(email_consulta):
 
 # ----------------- DIAGNOSTICO Y LOCALIZACIÓN DE FONDO (jinsei.JPG) -----------------
 def localizar_fotografia_fondo():
-    """
-    Comprueba de forma estricta:
-    1. Ruta principal: assets/jinsei.JPG
-    2. Rutas alternativas de respaldo (assets/jinsei.jpg, raíz)
-    """
     ruta_principal = BASE_DIR / "assets" / "jinsei.JPG"
     if ruta_principal.exists():
         return ruta_principal
@@ -137,8 +132,7 @@ def aplicar_estilos_institucionales():
             f"⚠️ **DIAGNÓSTICO DE ERROR DE FONDO:**\n\n"
             f"- **Ubicación de app_web.py:** `{BASE_DIR}`\n"
             f"- **Ruta principal verificada:** `{BASE_DIR / 'assets' / 'jinsei.JPG'}` (No encontrada)\n"
-            f"- **Archivos reales encontrados en la carpeta 'assets':** `{archivos_en_assets}`\n\n"
-            f"*Verifique que el archivo 'jinsei.JPG' esté escrito exactamente con esa extensión en su repositorio de GitHub y no esté bloqueado por .gitignore.*"
+            f"- **Archivos reales encontrados en la carpeta 'assets':** `{archivos_en_assets}`"
         )
 
     css = f"""
@@ -189,7 +183,6 @@ def aplicar_estilos_institucionales():
 aplicar_estilos_institucionales()
 
 def localizar_logo():
-    """Busca el archivo oficial logo.png de manera flexible."""
     candidatos = [
         ASSETS_DIR / "logo.png",
         ASSETS_DIR / "LOGO.png",
@@ -202,7 +195,6 @@ def localizar_logo():
     return None
 
 def mostrar_encabezado_institucional(titulo_modulo=""):
-    """Función global reutilizable con logo institucional grande (200px) y alineado verticalmente."""
     logo_file = localizar_logo()
 
     col_logo, col_titulo = st.columns([0.22, 3.78], vertical_alignment="center")
@@ -939,4 +931,115 @@ elif st.session_state.modulo_activo == "Pagos (Alerta)":
     
     with tab_p_ver:
         if os.path.exists(ARCHIVO_PAGOS):
-            with
+            with open(ARCHIVO_PAGOS, mode="r", encoding="utf-8") as f:
+                reader_p = list(csv.reader(f))
+                if len(reader_p) > 1:
+                    for row in reader_p[1:]:
+                        atleta = row[0]
+                        estado = row[1]
+                        fecha = row[2]
+                        valor = row[3] if len(row) > 3 else "$60.000 COP"
+                        if estado == "Pagado / Al Día":
+                            st.success(f"✅ **{atleta}** — Estado: **Pagado** | Fecha: {fecha} | Valor: {valor}")
+                        else:
+                            st.error(f"🚨 **{atleta}** — Estado: **PENDIENTE / VENCIDO**")
+                else:
+                    st.info("No hay registros de pagos cargados.")
+        else:
+            st.info("Aún no hay historial de pagos.")
+
+    with tab_p_reg:
+        if os.path.exists(ARCHIVO_DEPORTISTAS):
+            with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
+                deps = [r[0] for r in list(csv.reader(f))[1:]]
+                if deps:
+                    with st.form("form_reg_pago"):
+                        atleta_sel = st.selectbox("Seleccionar Deportista", deps)
+                        estado_pago = st.selectbox("Estado", ["Pagado / Al Día", "Pendiente / Vencido"])
+                        valor_pago = st.text_input("Valor Cancelado", value="$60.000 COP")
+                        medio_pago = st.selectbox("Medio Utilizado", ["Nequi", "Daviplata", "Llave / Dale", "Efectivo", "Transferencia"])
+                        fecha_pago = st.date_input("Fecha del Pago", value=datetime.now())
+                        submit_p = st.form_submit_button("Guardar Estado de Pago")
+                        
+                        if submit_p:
+                            pagos_data = []
+                            if os.path.exists(ARCHIVO_PAGOS):
+                                with open(ARCHIVO_PAGOS, mode="r", encoding="utf-8") as fp:
+                                    pagos_data = list(csv.reader(fp))
+                            header_p = ["Deportista", "Estado", "Fecha", "Valor", "Medio"]
+                            if not pagos_data:
+                                pagos_data = [header_p]
+                                
+                            actualizado = False
+                            for i in range(1, len(pagos_data)):
+                                if pagos_data[i][0] == atleta_sel:
+                                    pagos_data[i] = [atleta_sel, estado_pago, str(fecha_pago), valor_pago, medio_pago]
+                                    actualizado = True
+                                    break
+                            if not actualizado:
+                                pagos_data.append([atleta_sel, estado_pago, str(fecha_pago), valor_pago, medio_pago])
+                                
+                            with open(ARCHIVO_PAGOS, mode="w", newline="", encoding="utf-8") as fp:
+                                csv.writer(fp).writerows(pagos_data)
+                            st.success(f"¡Pago registrado correctamente para {atleta_sel}!")
+                            st.rerun()
+                else:
+                    st.info("Debe registrar deportistas primero.")
+        else:
+            st.info("No hay deportistas en la base de datos.")
+
+    with tab_p_rec:
+        if os.path.exists(ARCHIVO_PAGOS):
+            with open(ARCHIVO_PAGOS, mode="r", encoding="utf-8") as f:
+                pagos_list = list(csv.reader(f))
+                pagados = [r for r in pagos_list[1:] if len(r) > 1 and r[1] == "Pagado / Al Día"]
+                if pagados:
+                    nombres_pagados = [r[0] for r in pagados]
+                    atleta_rec = st.selectbox("Seleccionar Atleta con Pago al Día:", nombres_pagados)
+                    for r in pagados:
+                        if r[0] == atleta_rec:
+                            recibo_texto = (
+                                "=====================================================\n"
+                                "        CLUB JINSEI TAEKWONDO TENJO\n"
+                                "     RECIBO OFICIAL DE PAGO DE MENSUALIDAD\n"
+                                "=====================================================\n"
+                                f"Deportista: {r[0]}\n"
+                                f"Estado: {r[1]}\n"
+                                f"Fecha de Pago: {r[2]}\n"
+                                f"Valor: {r[3]}\n"
+                                f"Medio Utilizado: {r[4]}\n"
+                                "-----------------------------------------------------\n"
+                                "Sede: Tenjo, Cundinamarca — Vereda Chincé, Sector Zoque\n"
+                                f"Teléfono de Pagos: {NUMERO_PAGOS_DIGITALES}\n"
+                                "¡Gracias por su puntualidad y apoyo al club!\n"
+                                "====================================================="
+                            )
+                            st.text_area("Comprobante Oficial Generado", recibo_texto, height=220)
+                            st.download_button(
+                                "⬇️ Descargar recibo",
+                                data=recibo_texto,
+                                file_name=f"recibo_{atleta_rec.replace(' ', '_')}.txt",
+                                mime="text/plain",
+                                key=f"descargar_recibo_{atleta_rec}"
+                            )
+                else:
+                    st.info("No hay pagos al día para generar recibos.")
+        else:
+            st.info("Aún no hay registros de pagos.")
+
+elif st.session_state.modulo_activo == "Agenda de Torneos y Eventos":
+    mostrar_encabezado_institucional("Agenda de Torneos y Eventos")
+    with st.form("form_agenda_ev"):
+        nom_ev = st.text_input("Nombre del Torneo, Examen o Evento")
+        fec_ev = st.date_input("Fecha del Evento")
+        sub_ev = st.form_submit_button("Registrar en Agenda")
+        if sub_ev:
+            if nom_ev:
+                with open(ARCHIVO_EVENTOS, mode="a", newline="", encoding="utf-8") as fe:
+                    csv.writer(fe).writerows([[nom_ev, str(fec_ev)]])
+                st.success("¡Evento agregado a la agenda!")
+    if os.path.exists(ARCHIVO_EVENTOS):
+        with open(ARCHIVO_EVENTOS, mode="r", encoding="utf-8") as fe:
+            for r in csv.reader(fe):
+                if r:
+                    st.write(f"🏆 **{r[0]}** — Fecha: {r[1]}")
