@@ -682,7 +682,12 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
             if lista_videos:
                 for vid_item in lista_videos:
                     st.write(f"🎬 **{vid_item}**")
-                    st.video(str(VIDEOS_DIR / vid_item))
+                    
+                    # Corrección robusta para asegurar renderizado visual del video en navegadores de escritorio
+                    video_path = VIDEOS_DIR / vid_item
+                    with open(video_path, "rb") as v_file:
+                        video_bytes = v_file.read()
+                    st.video(video_bytes, format="video/mp4")
                     
                     if st.button("🗑️ Eliminar Vídeo", key=f"del_vid_{vid_item}"):
                         st.session_state[f"confirm_del_vid_{vid_item}"] = True
