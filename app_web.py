@@ -84,11 +84,14 @@ def recuperar_credenciales(email_consulta):
                     return True, row[0], row[1]
     return False, None, None
 
-# ESTILOS INSTITUCIONALES Y FONDO CON FOTO DE DEPORTISTAS
+# ESTILOS INSTITUCIONALES Y FONDO CON FOTO DE DEPORTISTAS (foto.JPG)
 def aplicar_estilos_institucionales():
-    foto_bg_path = ASSETS_DIR / "foto.JPG"
+    foto_bg_path = BASE_DIR / "foto.JPG"
+    if not foto_bg_path.exists():
+        foto_bg_path = ASSETS_DIR / "foto.JPG"
+        
     encoded_bg = ""
-    if os.path.exists(foto_bg_path):
+    if foto_bg_path.exists():
         with open(foto_bg_path, "rb") as f:
             encoded_bg = base64.b64encode(f.read()).decode()
             
@@ -123,16 +126,21 @@ aplicar_estilos_institucionales()
 
 # ----------------- AUTENTICACIÓN Y LOGIN -----------------
 if not st.session_state.autenticado:
-    _, col_principal, _ = st.columns([1, 2.5, 1])
+    _, col_principal, _ = st.columns([0.5, 3, 0.5])
 
     with col_principal:
         logo_file = ASSETS_DIR / "logo.png"
-        if os.path.exists(logo_file):
-            c1, c2, c3 = st.columns([1, 1, 1])
-            with c2:
-                st.image(str(logo_file), width=120)
+        if not logo_file.exists():
+            logo_file = BASE_DIR / "logo.png"
 
-        st.markdown("<h2 style='text-align: center; color: #1E3A8A;'>Club Jinsei Taekwondo Tenjo</h2>", unsafe_allow_html=True)
+        # Encabezado con Logo a la izquierda y Nombre alineados horizontalmente
+        col_logo, col_titulo = st.columns([1, 3])
+        with col_logo:
+            if logo_file.exists():
+                st.image(str(logo_file), width=90)
+        with col_titulo:
+            st.markdown("<h2 style='color: #1E3A8A; margin-top: 10px;'>Club Jinsei Taekwondo Tenjo</h2>", unsafe_allow_html=True)
+            
         st.markdown("<p style='text-align: center; color: #475569;'>Sistema oficial de gestión deportiva y administrativa</p>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
@@ -201,7 +209,9 @@ if st.sidebar.button("🚪 Cerrar Sesión"):
 
 st.sidebar.info("Jinsei Taekwondo — Tenjo")
 logo_lateral = ASSETS_DIR / "logo.png"
-if os.path.exists(logo_lateral):
+if not logo_lateral.exists():
+    logo_lateral = BASE_DIR / "logo.png"
+if logo_lateral.exists():
     st.sidebar.image(str(logo_lateral), use_container_width=True)
 
 st.sidebar.markdown(f"📱 **Contacto / Pagos:**\n`{NUMERO_PAGOS_DIGITALES}`")
@@ -706,25 +716,4 @@ Teléfono de Pagos: {NUMERO_PAGOS_DIGITALES}
 =====================================================
                             """
                             st.text_area("Comprobante Oficial Generado", recibo_texto, height=220)
-                            st.download_button("⬇️ Descargar Recibo Oficial (.TXT)", data=recibo_texto, file_name=f"recibo_{r[0].replace(' ', '_')}.txt", mime="text/plain")
-                else:
-                    st.info("No hay deportistas con estado 'Pagado / Al Día' para generar recibo.")
-        else:
-            st.info("No hay registros de pagos.")
-
-elif st.session_state.modulo_activo == "Agenda de Torneos y Eventos":
-    st.header("📅 Agenda de Torneos y Eventos")
-    with st.form("form_agenda_ev"):
-        nom_ev = st.text_input("Nombre del Torneo, Examen o Evento")
-        fec_ev = st.date_input("Fecha del Evento")
-        sub_ev = st.form_submit_button("Registrar en Agenda")
-        if sub_ev:
-            if nom_ev:
-                with open(ARCHIVO_EVENTOS, mode="a", newline="", encoding="utf-8") as fe:
-                    csv.writer(fe).writerows([[nom_ev, str(fec_ev)]])
-                st.success("¡Evento agregado a la agenda!")
-    if os.path.exists(ARCHIVO_EVENTOS):
-        with open(ARCHIVO_EVENTOS, mode="r", encoding="utf-8") as fe:
-            for r in csv.reader(fe):
-                if r:
-                    st.write(f"🏆 **{r[0]}** — Fecha: {r[1]}")
+                            st.download_button("⬇️ Descargar
