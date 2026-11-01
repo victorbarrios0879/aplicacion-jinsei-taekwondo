@@ -194,7 +194,6 @@ def localizar_fotografia_fondo():
 def aplicar_estilos_institucionales():
     foto_bg_path = localizar_fotografia_fondo()
     imagen_css = ""
-    
     if foto_bg_path and foto_bg_path.exists():
         with open(foto_bg_path, "rb") as archivo:
             encoded_bg = base64.b64encode(archivo.read()).decode("ascii")
@@ -203,11 +202,6 @@ def aplicar_estilos_institucionales():
 
     css = f"""
     <style>
-    /* Ocultar la barra superior de Streamlit y el botón de GitHub */
-    header {{visibility: hidden;}}
-    #MainMenu {{visibility: hidden;}}
-    footer {{visibility: hidden;}}
-
     .stApp {{
         background-image:
             linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.72)),
@@ -245,6 +239,7 @@ def aplicar_estilos_institucionales():
     st.markdown(css, unsafe_allow_html=True)
 
 aplicar_estilos_institucionales()
+
 def localizar_logo():
     candidatos = [ASSETS_DIR / "logo.png", ASSETS_DIR / "LOGO.png", BASE_DIR / "logo.png", BASE_DIR / "LOGO.png"]
     for c in candidatos:
@@ -681,3 +676,501 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
                         st.write("Elige tu reacción:")
                         c_b1, c_b2, c_b3, c_b4 = st.columns(4)
                         with c_b1:
+                            if st.button("❤️", key=f"btn_f1_{foto_item}", help="Me gusta"):
+                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "❤️ Me gusta")
+                                st.rerun()
+                        with c_b2:
+                            if st.button("👏", key=f"btn_f2_{foto_item}", help="Excelente"):
+                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "👏 Excelente")
+                                st.rerun()
+                        with c_b3:
+                            if st.button("🔥", key=f"btn_f3_{foto_item}", help="Genial"):
+                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "🔥 Genial")
+                                st.rerun()
+                        with c_b4:
+                            if st.button("🥋", key=f"btn_f4_{foto_item}", help="Orgullo Jinsei"):
+                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "🥋 Orgullo Jinsei")
+                                st.rerun()
+                                
+                        if mi_reaccion != "Ninguna":
+                            if st.button("❌ Retirar reacción", key=f"btn_retirar_f_{foto_item}"):
+                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "Retirar")
+                                st.rerun()
+
+                    with col_f2:
+                        if st.button("🗑️ Eliminar Foto", key=f"del_foto_{foto_item}"):
+                            st.session_state[f"confirm_del_foto_{foto_item}"] = True
+                        
+                        if st.session_state.get(f"confirm_del_foto_{foto_item}", False):
+                            st.warning(f"¿Confirma eliminar '{foto_item}'?")
+                            if st.button("Sí, eliminar definitivamente", key=f"yes_del_foto_{foto_item}"):
+                                (FOTOS_CLUB_DIR / foto_item).unlink()
+                                st.success("Foto eliminada correctamente.")
+                                st.rerun()
+                            if st.button("Cancelar", key=f"cancel_del_foto_{foto_item}"):
+                                st.session_state[f"confirm_del_foto_{foto_item}"] = False
+                                st.rerun()
+                    st.markdown("---")
+            else:
+                st.info("No hay fotos guardadas aún.")
+    else:
+        st.subheader("📤 Subir Nuevo Vídeo")
+        with st.form("form_subir_video_multimedia"):
+            video_subido = st.file_uploader("Seleccione el archivo de vídeo", type=["mp4", "mov", "avi"])
+            submit_video = st.form_submit_button("Guardar Vídeo")
+            if submit_video:
+                if video_subido is not None:
+                    ruta_v = VIDEOS_DIR / video_subido.name
+                    with open(ruta_v, "wb") as f:
+                        f.write(video_subido.getbuffer())
+                    st.success(f"¡Vídeo '{video_subido.name}' guardado con éxito!")
+                    st.rerun()
+                else:
+                    st.warning("Seleccione un archivo de vídeo primero.")
+                
+        st.markdown("---")
+        st.subheader("🎥 Videoteca Técnica y Reacciones")
+        if os.path.exists(VIDEOS_DIR):
+            lista_videos = [f for f in os.listdir(VIDEOS_DIR) if f.lower().endswith(('.mp4', '.mov', '.avi'))]
+            if lista_videos:
+                for vid_item in lista_videos:
+                    st.write(f"🎬 **{vid_item}**")
+                    
+                    video_path = VIDEOS_DIR / vid_item
+                    with open(video_path, "rb") as v_file:
+                        video_bytes = v_file.read()
+                    st.video(video_bytes, format="video/mp4")
+                    
+                    # --- SISTEMA DE REACCIONES (BOTONES INTERACTIVOS) ---
+                    conteo_reacs_v, mi_reaccion_v = obtener_resumen_reacciones(vid_item)
+                    
+                    resumen_html_v = " ".join([f"<span class='reaccion-badge'>{k}: <b>{v}</b></span>" for k, v in conteo_reacs_v.items() if v > 0])
+                    if not resumen_html_v:
+                        resumen_html_v = "<span style='color: #64748b; font-size: 13px;'>Sé el primero en reaccionar.</span>"
+                    st.markdown(f"**Reacciones Totales:** {resumen_html_v}", unsafe_allow_html=True)
+                    if mi_reaccion_v != "Ninguna":
+                        st.caption(f"Tu reacción actual: **{mi_reaccion_v}**")
+                        
+                    st.write("Elige tu reacción:")
+                    c_v1, c_v2, c_v3, c_v4 = st.columns(4)
+                    with c_v1:
+                        if st.button("❤️", key=f"btn_v1_{vid_item}", help="Me gusta"):
+                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "❤️ Me gusta")
+                            st.rerun()
+                    with c_v2:
+                        if st.button("👏", key=f"btn_v2_{vid_item}", help="Excelente"):
+                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "👏 Excelente")
+                            st.rerun()
+                    with c_v3:
+                        if st.button("🔥", key=f"btn_v3_{vid_item}", help="Genial"):
+                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "🔥 Genial")
+                            st.rerun()
+                    with c_v4:
+                        if st.button("🥋", key=f"btn_v4_{vid_item}", help="Orgullo Jinsei"):
+                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "🥋 Orgullo Jinsei")
+                            st.rerun()
+                            
+                    if mi_reaccion_v != "Ninguna":
+                        if st.button("❌ Retirar reacción", key=f"btn_retirar_v_{vid_item}"):
+                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "Retirar")
+                            st.rerun()
+
+                    if st.button("🗑️ Eliminar Vídeo", key=f"del_vid_{vid_item}"):
+                        st.session_state[f"confirm_del_vid_{vid_item}"] = True
+                    
+                    if st.session_state.get(f"confirm_del_vid_{vid_item}", False):
+                        st.warning(f"¿Confirma eliminar el vídeo '{vid_item}'?")
+                        if st.button("Sí, eliminar vídeo", key=f"yes_del_vid_{vid_item}"):
+                            (VIDEOS_DIR / vid_item).unlink()
+                            st.success("Vídeo eliminado correctamente.")
+                            st.rerun()
+                        if st.button("Cancelar", key=f"cancel_del_vid_{vid_item}"):
+                            st.session_state[f"confirm_del_vid_{vid_item}"] = False
+                            st.rerun()
+                    st.markdown("---")
+            else:
+                st.info("No hay vídeos guardados aún.")
+
+elif st.session_state.modulo_activo == "Archivo de Eventos, Competencias y Ascensos":
+    mostrar_encabezado_institucional("Archivo de Documentos")
+    tab_doc_subir, tab_doc_ver = st.tabs(["Subir Documento / Archivo", "Consultar y Administrar Archivos"])
+    
+    with tab_doc_subir:
+        with st.form("form_subir_archivo_general"):
+            st.subheader("Subir Nuevo Documento al Archivo del Club")
+            cat_sel = st.selectbox("Categoría", CATEGORIAS_DOCUMENTOS)
+            nombre_doc = st.text_input("Nombre o Título del Documento")
+            desc_doc = st.text_area("Descripción (Opcional)")
+            fecha_doc = st.date_input("Fecha del Documento", value=datetime.now())
+            
+            archivo_subido = st.file_uploader(
+                "Seleccione el archivo (PDF, Word, Excel, Imágenes u otros formatos)",
+                type=["pdf", "docx", "doc", "xlsx", "xls", "csv", "jpg", "jpeg", "png", "txt"]
+            )
+            
+            submit_archivo_gen = st.form_submit_button("Subir Archivo al Sistema")
+            if submit_archivo_gen:
+                if nombre_doc and archivo_subido is not None:
+                    ext = archivo_subido.name.split('.')[-1]
+                    nombre_archivo_seguro = f"{nombre_doc.replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d%H%M%S')}.{ext}"
+                    carpeta_destino = ARCHIVO_DOCUMENTOS_DIR / cat_sel
+                    ruta_final = carpeta_destino / nombre_archivo_seguro
+                    
+                    with open(ruta_final, "wb") as f:
+                        f.write(archivo_subido.getbuffer())
+                        
+                    meta_path = ARCHIVO_DOCUMENTOS_DIR / "metadatos_archivos.csv"
+                    meta_exists = meta_path.exists()
+                    with open(meta_path, mode="a", newline="", encoding="utf-8") as fm:
+                        writer = csv.writer(fm)
+                        if not meta_exists:
+                            writer.writerow(["Categoria", "Nombre", "Descripcion", "Fecha", "NombreArchivo"])
+                        writer.writerow([cat_sel, nombre_doc, desc_doc, str(fecha_doc), nombre_archivo_seguro])
+                        
+                    st.success(f"¡El documento '{nombre_doc}' se ha guardado exitosamente en la categoría '{cat_sel}'!")
+                else:
+                    st.warning("Por favor ingrese el nombre del documento y adjunte un archivo.")
+
+    with tab_doc_ver:
+        st.subheader("Consulta y Gestión por Categorías")
+        cat_consulta = st.selectbox("Seleccione Categoría a Consultar", CATEGORIAS_DOCUMENTOS, key="sel_cat_consulta")
+        carpeta_cat = ARCHIVO_DOCUMENTOS_DIR / cat_consulta
+        
+        if carpeta_cat.exists():
+            archivos_en_cat = list(carpeta_cat.iterdir())
+            if archivos_en_cat:
+                for arch in archivos_en_cat:
+                    if arch.is_file():
+                        col_d1, col_d2, col_d3 = st.columns([2, 1, 1])
+                        with col_d1:
+                            st.write(f"📄 **{arch.name}**")
+                        with col_d2:
+                            with open(arch, "rb") as f_dl:
+                                st.download_button(
+                                    "⬇️ Descargar",
+                                    data=f_dl,
+                                    file_name=arch.name,
+                                    key=f"dl_gen_{arch.name}"
+                                )
+                        with col_d3:
+                            if st.button("🗑️ Eliminar", key=f"btn_del_arch_{arch.name}"):
+                                st.session_state[f"confirm_del_arch_{arch.name}"] = True
+                                
+                            if st.session_state.get(f"confirm_del_arch_{arch.name}", False):
+                                st.warning(f"¿Desea eliminar '{arch.name}'?")
+                                if st.button("Sí, borrar", key=f"yes_del_arch_{arch.name}"):
+                                    arch.unlink()
+                                    st.success("Archivo eliminado.")
+                                    st.rerun()
+                                if st.button("Cancelar", key=f"cancel_del_arch_{arch.name}"):
+                                    st.session_state[f"confirm_del_arch_{arch.name}"] = False
+                                    st.rerun()
+                st.markdown("---")
+            else:
+                st.info(f"No hay archivos almacenados en la categoría '{cat_consulta}'.")
+        else:
+            st.info("La carpeta de esta categoría no existe.")
+
+elif st.session_state.modulo_activo == "Panel General del Entrenador (Solo Coach)":
+    mostrar_encabezado_institucional("Panel del Entrenador")
+    password_coach = st.text_input("Ingrese Contraseña de Autorización Coach", type="password")
+    
+    if password_coach == CONTRASENA_ENTRENADOR:
+        st.success("✅ Acceso Autorizado al Panel de Control.")
+        tab_dep_c, tab_reg_c, tab_del_c, tab_mac_c, tab_doc_c = st.tabs([
+            "📋 Lista de Deportistas", 
+            "➕ Registrar Deportista", 
+            "🗑️ Eliminar Deportista", 
+            "📊 Macroestructuras", 
+            "📄 Documentos PDF"
+        ])
+        
+        with tab_dep_c:
+            if os.path.exists(ARCHIVO_DEPORTISTAS):
+                with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
+                    data = list(csv.reader(f))
+                    if len(data) > 1:
+                        st.table(data)
+                    else:
+                        st.info("No hay deportistas registrados.")
+            else:
+                st.info("No hay registros en la base de datos.")
+
+        with tab_reg_c:
+            st.subheader("Registro Manual de Nuevo Deportista")
+            with st.form("form_coach_reg_dep"):
+                c1, c2 = st.columns(2)
+                with c1:
+                    nombres_reg = st.text_input("Nombres")
+                    apellidos_reg = st.text_input("Apellidos")
+                    doc_reg = st.text_input("Número de Documento")
+                    fnac_reg = st.date_input("Fecha de Nacimiento", value=datetime(2010, 1, 1))
+                    cat_reg = st.selectbox("Categoría", ["Infantil", "Cadetes", "Junior", "Sub-21", "Senior", "Master"])
+                    genero_reg = st.selectbox("Género", ["Masculino", "Femenino", "Otro"])
+                with c2:
+                    tel_reg = st.text_input("Teléfono de Contacto")
+                    acudiente_reg = st.text_input("Nombre del Acudiente")
+                    tel_acu_reg = st.text_input("Teléfono del Acudiente")
+                    fing_reg = st.date_input("Fecha de Ingreso al Club", value=datetime.now())
+                    estado_reg = st.selectbox("Estado del Deportista", ["Activo", "Inactivo"])
+                    eps_reg = st.text_input("EPS / Seguro Médico", value="EPS")
+                
+                submit_coach_dep = st.form_submit_button("Guardar Nuevo Deportista en el Sistema")
+                if submit_coach_dep:
+                    if nombres_reg and apellidos_reg and doc_reg:
+                        edad_calc = datetime.now().year - fnac_reg.year - ((datetime.now().month, datetime.now().day) < (fnac_reg.month, fnac_reg.day))
+                        nombre_completo = f"{nombres_reg} {apellidos_reg}"
+                        
+                        registros_dep = []
+                        header_dep = ["Nombre", "Documento", "Edad", "EPS", "Peso", "Estatura", "IMC", "Clasificacion", "Grado", "Contacto", "Fecha"]
+                        if os.path.exists(ARCHIVO_DEPORTISTAS):
+                            with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as fd:
+                                registros_dep = list(csv.reader(fd))
+                        if not registros_dep:
+                            registros_dep = [header_dep]
+                            
+                        duplicado = False
+                        for r in registros_dep[1:]:
+                            if len(r) > 1 and r[1] == doc_reg:
+                                duplicado = True
+                                break
+                                
+                        if duplicado:
+                            st.error(f"⚠️ Ya existe un deportista registrado con el número de documento {doc_reg}.")
+                        else:
+                            nueva_fila = [nombre_completo, doc_reg, str(edad_calc), eps_reg, "60.0", "1.70", "20.76", "Normal", "Blanco (10° Kup)", tel_reg, str(fing_reg)]
+                            registros_dep.append(nueva_fila)
+                            with open(ARCHIVO_DEPORTISTAS, mode="w", newline="", encoding="utf-8") as fd:
+                                writer = csv.writer(fd)
+                                writer.writerows(registros_dep)
+                            st.success(f"¡Deportista {nombre_completo} registrado con éxito! (Edad calculada: {edad_calc} años)")
+                    else:
+                        st.warning("Por favor complete los campos obligatorios: Nombres, Apellidos y Documento.")
+
+        with tab_del_c:
+            st.subheader("Eliminación Manual de Deportista")
+            if os.path.exists(ARCHIVO_DEPORTISTAS):
+                with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
+                    data_del = list(csv.reader(f))
+                    if len(data_del) > 1:
+                        filas_deps = data_del[1:]
+                        opciones_dep = [f"{r[0]} (Doc: {r[1]})" for r in filas_deps if len(r) > 1]
+                        atleta_seleccionado = st.selectbox("Seleccione el deportista a gestionar:", opciones_dep)
+                        
+                        if atleta_seleccionado:
+                            doc_buscar = atleta_seleccionado.split("Doc: ")[1].replace(")", "").strip()
+                            atleta_encontrado = None
+                            for r in filas_deps:
+                                if len(r) > 1 and r[1] == doc_buscar:
+                                    atleta_encontrado = r
+                                    break
+                                    
+                            if atleta_encontrado:
+                                st.markdown(f"""
+                                **Datos del deportista seleccionado:**
+                                * **Nombre:** {atleta_encontrado[0]}
+                                * **Documento:** {atleta_encontrado[1]}
+                                * **Edad:** {atleta_encontrado[2]}
+                                * **EPS:** {atleta_encontrado[3]}
+                                * **Grado / Cinturón:** {atleta_encontrado[8] if len(atleta_encontrado)>8 else 'N/A'}
+                                * **Contacto:** {atleta_encontrado[9] if len(atleta_encontrado)>9 else 'N/A'}
+                                """)
+                                
+                                if st.button("❌ Eliminar este Deportista Permanentemente"):
+                                    st.session_state[f"confirm_del_atleta_{doc_buscar}"] = True
+                                    
+                                if st.session_state.get(f"confirm_del_atleta_{doc_buscar}", False):
+                                    st.warning(f"⚠️ ¿Está completamente seguro de eliminar a {atleta_encontrado[0]} del sistema?")
+                                    if st.button("Sí, eliminar deportista", key=f"yes_del_atl_{doc_buscar}"):
+                                        nuevos_deps = [data_del[0]] + [r for r in filas_deps if r[1] != doc_buscar]
+                                        with open(ARCHIVO_DEPORTISTAS, mode="w", newline="", encoding="utf-8") as fw:
+                                            csv.writer(fw).writerows(nuevos_deps)
+                                        st.success(f"Deportista {atleta_encontrado[0]} eliminado correctamente.")
+                                        st.rerun()
+                                    if st.button("Cancelar", key=f"cancel_del_atl_{doc_buscar}"):
+                                        st.session_state[f"confirm_del_atleta_{doc_buscar}"] = False
+                                        st.rerun()
+                    else:
+                        st.info("No hay deportistas registrados para eliminar.")
+            else:
+                st.info("No hay base de datos de deportistas disponible.")
+                        
+        with tab_mac_c:
+            st.subheader("Carga y Gestión de Macroestructuras de Entrenamiento")
+            with st.form("form_subir_macro"):
+                titulo_mac = st.text_input("Título de la Macroestructura (Ej: Macro Anual 2026)")
+                archivo_mac = st.file_uploader("Subir Archivo (Excel o PDF)", type=["xlsx", "xls", "pdf", "csv"])
+                submit_mac = st.form_submit_button("Subir Macroestructura")
+                
+                if submit_mac:
+                    if titulo_mac and archivo_mac is not None:
+                        ext = archivo_mac.name.split('.')[-1]
+                        ruta_m = MACRO_DIR / f"{titulo_mac.replace(' ', '_').lower()}.{ext}"
+                        with open(ruta_m, "wb") as fm:
+                            fm.write(archivo_mac.getbuffer())
+                        st.success(f"¡Macroestructura '{titulo_mac}' cargada con éxito!")
+                    else:
+                        st.warning("Ingrese un título y adjunte un archivo.")
+                        
+            st.markdown("---")
+            st.subheader("Archivos Cargados y Descarga / Borrado")
+            macros_disponibles = list(MACRO_DIR.glob("*.*"))
+            if macros_disponibles:
+                for mac_item in macros_disponibles:
+                    cm1, cm2 = st.columns([3, 1])
+                    with cm1:
+                        st.write(f"📊 `{mac_item.name}`")
+                    with cm2:
+                        if st.button("🗑️ Borrar", key=f"del_mac_{mac_item.name}"):
+                            mac_item.unlink()
+                            st.success(f"Eliminado: {mac_item.name}")
+                            st.rerun()
+            else:
+                st.info("No hay macroestructuras cargadas.")
+
+        with tab_doc_c:
+            st.subheader("Administración de Archivos Exoneración")
+            archivos_pdf = list(EXONERACIONES_DIR.glob("*.pdf"))
+            if archivos_pdf:
+                for pdf_item in archivos_pdf:
+                    c_n, c_b = st.columns([3, 1])
+                    with c_n:
+                        st.write(f"📄 `{pdf_item.name}`")
+                    with c_b:
+                        if st.button(f"🗑️ Eliminar", key=f"del_pdf_c_{pdf_item.name}"):
+                            pdf_item.unlink()
+                            st.success(f"Eliminado: {pdf_item.name}")
+                            st.rerun()
+    elif password_coach != "":
+        st.error("⚠️ Contraseña incorrecta.")
+
+elif st.session_state.modulo_activo == "Pagos (Alerta)":
+    mostrar_encabezado_institucional("Control de Pagos")
+    dia_actual = datetime.now().day
+    if dia_actual <= 5:
+        st.warning(f"🚨 **¡AVISO INSTITUCIONAL DE MENSUALIDAD!** Nos encontramos en los primeros 5 días del mes (Día {dia_actual}). Por favor recuerde realizar el pago de su mensualidad a tiempo.")
+
+    st.info(f"""
+    📲 **MEDIOS DE PAGO OFICIALES DISPONIBLES:**
+    * **Nequi:** `{NUMERO_PAGOS_DIGITALES}`
+    * **Daviplata:** `{NUMERO_PAGOS_DIGITALES}`
+    * **Llave / ID de Pago:** `{NUMERO_PAGOS_DIGITALES}`
+    """)
+    st.markdown("---")
+    
+    tab_p_ver, tab_p_reg, tab_p_rec = st.tabs(["📋 Consultar Pagos y Vencidos", "➕ Registrar Pago", "🧾 Generar Recibo Oficial"])
+    
+    with tab_p_ver:
+        if os.path.exists(ARCHIVO_PAGOS):
+            with open(ARCHIVO_PAGOS, mode="r", encoding="utf-8") as f:
+                reader_p = list(csv.reader(f))
+                if len(reader_p) > 1:
+                    for row in reader_p[1:]:
+                        atleta = row[0]
+                        estado = row[1]
+                        fecha = row[2]
+                        valor = row[3] if len(row) > 3 else "$60.000 COP"
+                        if estado == "Pagado / Al Día":
+                            st.success(f"✅ **{atleta}** — Estado: **Pagado** | Fecha: {fecha} | Valor: {valor}")
+                        else:
+                            st.error(f"🚨 **{atleta}** — Estado: **PENDIENTE / VENCIDO**")
+                else:
+                    st.info("No hay registros de pagos cargados.")
+        else:
+            st.info("Aún no hay historial de pagos.")
+
+    with tab_p_reg:
+        if os.path.exists(ARCHIVO_DEPORTISTAS):
+            with open(ARCHIVO_DEPORTISTAS, mode="r", encoding="utf-8") as f:
+                deps = [r[0] for r in list(csv.reader(f))[1:]]
+                if deps:
+                    with st.form("form_reg_pago"):
+                        atleta_sel = st.selectbox("Seleccionar Deportista", deps)
+                        estado_pago = st.selectbox("Estado", ["Pagado / Al Día", "Pendiente / Vencido"])
+                        valor_pago = st.text_input("Valor Cancelado", value="$60.000 COP")
+                        medio_pago = st.selectbox("Medio Utilizado", ["Nequi", "Daviplata", "Llave / Dale", "Efectivo", "Transferencia"])
+                        fecha_pago = st.date_input("Fecha del Pago", value=datetime.now())
+                        submit_p = st.form_submit_button("Guardar Estado de Pago")
+                        
+                        if submit_p:
+                            pagos_data = []
+                            if os.path.exists(ARCHIVO_PAGOS):
+                                with open(ARCHIVO_PAGOS, mode="r", encoding="utf-8") as fp:
+                                    pagos_data = list(csv.reader(fp))
+                            header_p = ["Deportista", "Estado", "Fecha", "Valor", "Medio"]
+                            if not pagos_data:
+                                pagos_data = [header_p]
+                                
+                            actualizado = False
+                            for i in range(1, len(pagos_data)):
+                                if pagos_data[i][0] == atleta_sel:
+                                    pagos_data[i] = [atleta_sel, estado_pago, str(fecha_pago), valor_pago, medio_pago]
+                                    actualizado = True
+                                    break
+                            if not actualizado:
+                                pagos_data.append([atleta_sel, estado_pago, str(fecha_pago), valor_pago, medio_pago])
+                                
+                            with open(ARCHIVO_PAGOS, mode="w", newline="", encoding="utf-8") as fp:
+                                csv.writer(fp).writerows(pagos_data)
+                            st.success(f"¡Pago registrado correctamente para {atleta_sel}!")
+                            st.rerun()
+                else:
+                    st.info("Debe registrar deportistas primero.")
+        else:
+            st.info("No hay deportistas en la base de datos.")
+
+    with tab_p_rec:
+        if os.path.exists(ARCHIVO_PAGOS):
+            with open(ARCHIVO_PAGOS, mode="r", encoding="utf-8") as f:
+                pagos_list = list(csv.reader(f))
+                pagados = [r for r in pagos_list[1:] if len(r) > 1 and r[1] == "Pagado / Al Día"]
+                if pagados:
+                    nombres_pagados = [r[0] for r in pagados]
+                    atleta_rec = st.selectbox("Seleccionar Atleta con Pago al Día:", nombres_pagados)
+                    for r in pagados:
+                        if r[0] == atleta_rec:
+                            recibo_texto = (
+                                "=====================================================\n"
+                                "        CLUB JINSEI TAEKWONDO TENJO\n"
+                                "     RECIBO OFICIAL DE PAGO DE MENSUALIDAD\n"
+                                "=====================================================\n"
+                                f"Deportista: {r[0]}\n"
+                                f"Estado: {r[1]}\n"
+                                f"Fecha de Pago: {r[2]}\n"
+                                f"Valor: {r[3]}\n"
+                                f"Medio Utilizado: {r[4]}\n"
+                                "-----------------------------------------------------\n"
+                                "Sede: Tenjo, Cundinamarca — Vereda Chincé, Sector Zoque\n"
+                                f"Teléfono de Pagos: {NUMERO_PAGOS_DIGITALES}\n"
+                                "¡Gracias por su puntualidad y apoyo al club!\n"
+                                "====================================================="
+                            )
+                            st.text_area("Comprobante Oficial Generado", recibo_texto, height=220)
+                            st.download_button(
+                                "⬇️ Descargar recibo",
+                                data=recibo_texto,
+                                file_name=f"recibo_{atleta_rec.replace(' ', '_')}.txt",
+                                mime="text/plain",
+                                key=f"descargar_recibo_{atleta_rec}"
+                            )
+                else:
+                    st.info("No hay pagos al día para generar recibos.")
+        else:
+            st.info("Aún no hay registros de pagos.")
+
+elif st.session_state.modulo_activo == "Agenda de Torneos y Eventos":
+    mostrar_encabezado_institucional("Agenda de Torneos y Eventos")
+    with st.form("form_agenda_ev"):
+        nom_ev = st.text_input("Nombre del Torneo, Examen o Evento")
+        fec_ev = st.date_input("Fecha del Evento")
+        sub_ev = st.form_submit_button("Registrar en Agenda")
+        if sub_ev:
+            if nom_ev:
+                with open(ARCHIVO_EVENTOS, mode="a", newline="", encoding="utf-8") as fe:
+                    csv.writer(fe).writerows([[nom_ev, str(fec_ev)]])
+                st.success("¡Evento agregado a la agenda!")
+    if os.path.exists(ARCHIVO_EVENTOS):
+        with open(ARCHIVO_EVENTOS, mode="r", encoding="utf-8") as fe:
+            for r in csv.reader(fe):
+                if r:
+                    st.write(f"🏆 **{r[0]}** — Fecha: {r[1]}")
