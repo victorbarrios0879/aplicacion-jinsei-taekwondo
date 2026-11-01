@@ -202,6 +202,11 @@ def aplicar_estilos_institucionales():
 
     css = f"""
     <style>
+    /* Ocultar la barra superior de Streamlit y el botón de GitHub */
+    header {{visibility: hidden;}}
+    #MainMenu {{visibility: hidden;}}
+    footer {{visibility: hidden;}}
+
     .stApp {{
         background-image:
             linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.72)),
