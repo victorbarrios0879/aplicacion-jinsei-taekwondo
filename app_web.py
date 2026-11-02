@@ -115,7 +115,7 @@ def registrar_nuevo_usuario(user, pwd, email):
         if not file_exists:
             writer.writerow(["Usuario", "Contraseña", "Correo"])
         writer.writerow([user, pwd, email])
-    return True, "¡Usuario registrado con éxito!"
+    return True, "¡Usuario registrado con éxito! Ya puedes usar tu correo para recuperar credenciales."
 
 def recuperar_credenciales(email_consulta):
     if email_consulta.strip().lower() == "admin@jinsei.com":
@@ -319,7 +319,7 @@ if not st.session_state.autenticado:
             with st.form("form_registro"):
                 st.markdown("#### Nuevo Usuario")
                 nuevo_user = st.text_input("Nombre de Usuario")
-                nuevo_email = st.text_input("Correo Electrónico")
+                nuevo_email = st.text_input("Correo Electrónico (Necesario para recuperación)")
                 nuevo_pass = st.text_input("Contraseña", type="password")
                 submit_registro = st.form_submit_button("Registrarse", use_container_width=True)
                 
@@ -331,20 +331,20 @@ if not st.session_state.autenticado:
                     else:
                         st.error(msg)
                 else:
-                    st.warning("Por favor complete todos los campos.")
+                    st.warning("Por favor complete todos los campos, incluido el correo electrónico.")
 
         with tab3:
             with st.form("form_recuperar"):
                 st.markdown("#### Recuperar Cuenta")
-                correo_recuperar = st.text_input("Correo registrado")
-                submit_recuperar = st.form_submit_button("Buscar", use_container_width=True)
+                correo_recuperar = st.text_input("Correo electrónico registrado")
+                submit_recuperar = st.form_submit_button("Buscar Credenciales", use_container_width=True)
                 
             if submit_recuperar:
                 encontrado, u, p = recuperar_credenciales(correo_recuperar)
                 if encontrado:
-                    st.info(f"🔑 Usuario: **{u}** | Clave: **{p}**")
+                    st.info(f"🔑 Cuenta encontrada con éxito:\n* **Usuario:** `{u}`\n* **Contraseña:** `{p}`")
                 else:
-                    st.error("No se encontró cuenta asociada.")
+                    st.error("No se encontró ninguna cuenta asociada a ese correo.")
 
     st.stop()
 
@@ -669,36 +669,39 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
                     with col_f1:
                         st.image(str(FOTOS_CLUB_DIR / foto_item), caption=foto_item, width=300)
                         
-                        # --- SISTEMA DE REACCIONES (DESPLEGABLE) ---
+                        # --- SISTEMA DE REACCIONES (ESTILO REDES SOCIALES / BOTONES) ---
                         conteo_reacs, mi_reaccion = obtener_resumen_reacciones(foto_item)
                         
                         resumen_html = " ".join([f"<span class='reaccion-badge'>{k}: <b>{v}</b></span>" for k, v in conteo_reacs.items() if v > 0])
                         if not resumen_html:
                             resumen_html = "<span style='color: #64748b; font-size: 13px;'>Sé el primero en reaccionar.</span>"
                         st.markdown(f"**Reacciones Totales:** {resumen_html}", unsafe_allow_html=True)
-                        
                         if mi_reaccion != "Ninguna":
                             st.caption(f"Tu reacción actual: **{mi_reaccion}**")
-                        
-                        # Menú desplegable para escoger o cambiar la reacción
-                        opciones_select = ["Seleccionar reacción...", "❤️ Me gusta", "👏 Excelente", "🔥 Genial", "🥋 Orgullo Jinsei", "❌ Retirar reacción"]
-                        index_default = 0
-                        if mi_reaccion in LISTA_REACCIONS_DISPONIBLES:
-                            index_default = LISTA_REACCIONS_DISPONIBLES.index(mi_reaccion) + 1
-
-                        reaccion_elegida = st.selectbox(
-                            "Elige tu reacción:",
-                            opciones_select,
-                            index=0,
-                            key=f"select_reac_foto_{foto_item}"
-                        )
-                        
-                        if reaccion_elegida != "Seleccionar reacción...":
-                            if reaccion_elegida == "❌ Retirar reacción":
+                            
+                        st.write("Elige tu reacción:")
+                        c_b1, c_b2, c_b3, c_b4 = st.columns(4)
+                        with c_b1:
+                            if st.button("❤️", key=f"btn_f1_{foto_item}", help="Me gusta"):
+                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "❤️ Me gusta")
+                                st.rerun()
+                        with c_b2:
+                            if st.button("👏", key=f"btn_f2_{foto_item}", help="Excelente"):
+                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "👏 Excelente")
+                                st.rerun()
+                        with c_b3:
+                            if st.button("🔥", key=f"btn_f3_{foto_item}", help="Genial"):
+                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "🔥 Genial")
+                                st.rerun()
+                        with c_b4:
+                            if st.button("🥋", key=f"btn_f4_{foto_item}", help="Orgullo Jinsei"):
+                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "🥋 Orgullo Jinsei")
+                                st.rerun()
+                                
+                        if mi_reaccion != "Ninguna":
+                            if st.button("❌ Retirar reacción", key=f"btn_retirar_f_{foto_item}"):
                                 guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "Retirar")
-                            else:
-                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, reaccion_elegida)
-                            st.rerun()
+                                st.rerun()
 
                     with col_f2:
                         if st.button("🗑️ Eliminar Foto", key=f"del_foto_{foto_item}"):
@@ -745,31 +748,39 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
                         video_bytes = v_file.read()
                     st.video(video_bytes, format="video/mp4")
                     
-                    # --- SISTEMA DE REACCIONES (DESPLEGABLE) ---
+                    # --- SISTEMA DE REACCIONES (ESTILO REDES SOCIALES / BOTONES) ---
                     conteo_reacs_v, mi_reaccion_v = obtener_resumen_reacciones(vid_item)
                     
                     resumen_html_v = " ".join([f"<span class='reaccion-badge'>{k}: <b>{v}</b></span>" for k, v in conteo_reacs_v.items() if v > 0])
                     if not resumen_html_v:
                         resumen_html_v = "<span style='color: #64748b; font-size: 13px;'>Sé el primero en reaccionar.</span>"
                     st.markdown(f"**Reacciones Totales:** {resumen_html_v}", unsafe_allow_html=True)
-                    
                     if mi_reaccion_v != "Ninguna":
                         st.caption(f"Tu reacción actual: **{mi_reaccion_v}**")
                         
-                    opciones_select_v = ["Seleccionar reacción...", "❤️ Me gusta", "👏 Excelente", "🔥 Genial", "🥋 Orgullo Jinsei", "❌ Retirar reacción"]
-                    reaccion_elegida_v = st.selectbox(
-                        "Elige tu reacción:",
-                        opciones_select_v,
-                        index=0,
-                        key=f"select_reac_vid_{vid_item}"
-                    )
-                    
-                    if reaccion_elegida_v != "Seleccionar reacción...":
-                        if reaccion_elegida_v == "❌ Retirar reacción":
+                    st.write("Elige tu reacción:")
+                    c_v1, c_v2, c_v3, c_v4 = st.columns(4)
+                    with c_v1:
+                        if st.button("❤️", key=f"btn_v1_{vid_item}", help="Me gusta"):
+                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "❤️ Me gusta")
+                            st.rerun()
+                    with c_v2:
+                        if st.button("👏", key=f"btn_v2_{vid_item}", help="Excelente"):
+                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "👏 Excelente")
+                            st.rerun()
+                    with c_v3:
+                        if st.button("🔥", key=f"btn_v3_{vid_item}", help="Genial"):
+                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "🔥 Genial")
+                            st.rerun()
+                    with c_v4:
+                        if st.button("🥋", key=f"btn_v4_{vid_item}", help="Orgullo Jinsei"):
+                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "🥋 Orgullo Jinsei")
+                            st.rerun()
+                            
+                    if mi_reaccion_v != "Ninguna":
+                        if st.button("❌ Retirar reacción", key=f"btn_retirar_v_{vid_item}"):
                             guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "Retirar")
-                        else:
-                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, reaccion_elegida_v)
-                        st.rerun()
+                            st.rerun()
 
                     if st.button("🗑️ Eliminar Vídeo", key=f"del_vid_{vid_item}"):
                         st.session_state[f"confirm_del_vid_{vid_item}"] = True
@@ -1135,38 +1146,4 @@ elif st.session_state.modulo_activo == "Pagos (Alerta)":
                                 f"Fecha de Pago: {r[2]}\n"
                                 f"Valor: {r[3]}\n"
                                 f"Medio Utilizado: {r[4]}\n"
-                                "-----------------------------------------------------\n"
-                                "Sede: Tenjo, Cundinamarca — Vereda Chincé, Sector Zoque\n"
-                                f"Teléfono de Pagos: {NUMERO_PAGOS_DIGITALES}\n"
-                                "¡Gracias por su puntualidad y apoyo al club!\n"
-                                "====================================================="
-                            )
-                            st.text_area("Comprobante Oficial Generado", recibo_texto, height=220)
-                            st.download_button(
-                                "⬇️ Descargar recibo",
-                                data=recibo_texto,
-                                file_name=f"recibo_{atleta_rec.replace(' ', '_')}.txt",
-                                mime="text/plain",
-                                key=f"descargar_recibo_{atleta_rec}"
-                            )
-                else:
-                    st.info("No hay pagos al día para generar recibos.")
-        else:
-            st.info("Aún no hay registros de pagos.")
-
-elif st.session_state.modulo_activo == "Agenda de Torneos y Eventos":
-    mostrar_encabezado_institucional("Agenda de Torneos y Eventos")
-    with st.form("form_agenda_ev"):
-        nom_ev = st.text_input("Nombre del Torneo, Examen o Evento")
-        fec_ev = st.date_input("Fecha del Evento")
-        sub_ev = st.form_submit_button("Registrar en Agenda")
-        if sub_ev:
-            if nom_ev:
-                with open(ARCHIVO_EVENTOS, mode="a", newline="", encoding="utf-8") as fe:
-                    csv.writer(fe).writerows([[nom_ev, str(fec_ev)]])
-                st.success("¡Evento agregado a la agenda!")
-    if os.path.exists(ARCHIVO_EVENTOS):
-        with open(ARCHIVO_EVENTOS, mode="r", encoding="utf-8") as fe:
-            for r in csv.reader(fe):
-                if r:
-                    st.write(f"🏆 **{r[0]}** — Fecha: {r[1]}")
+                                "-----------------------------------------------------\n
