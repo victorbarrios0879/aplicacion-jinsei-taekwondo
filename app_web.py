@@ -645,11 +645,12 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
     
     if opcion_multimedia == "Fotos del Club":
         st.subheader("📤 Subir Nueva Foto")
-        with st.form("form_subir_foto_multimedia"):
+        with st.form("form_subir_foto_multimedia", clear_on_submit=True):
             foto_subida = st.file_uploader("Seleccione la imagen", type=["jpg", "jpeg", "png"])
             submit_foto = st.form_submit_button("Guardar Foto")
             if submit_foto:
                 if foto_subida is not None:
+                    FOTOS_CLUB_DIR.mkdir(exist_ok=True)
                     ruta = FOTOS_CLUB_DIR / foto_subida.name
                     with open(ruta, "wb") as f:
                         f.write(foto_subida.getbuffer())
@@ -668,39 +669,36 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
                     with col_f1:
                         st.image(str(FOTOS_CLUB_DIR / foto_item), caption=foto_item, width=300)
                         
-                        # --- SISTEMA DE REACCIONES (BOTONES INTERACTIVOS) ---
+                        # --- SISTEMA DE REACCIONES (DESPLEGABLE) ---
                         conteo_reacs, mi_reaccion = obtener_resumen_reacciones(foto_item)
                         
                         resumen_html = " ".join([f"<span class='reaccion-badge'>{k}: <b>{v}</b></span>" for k, v in conteo_reacs.items() if v > 0])
                         if not resumen_html:
                             resumen_html = "<span style='color: #64748b; font-size: 13px;'>Sé el primero en reaccionar.</span>"
                         st.markdown(f"**Reacciones Totales:** {resumen_html}", unsafe_allow_html=True)
+                        
                         if mi_reaccion != "Ninguna":
                             st.caption(f"Tu reacción actual: **{mi_reaccion}**")
-                            
-                        st.write("Elige tu reacción:")
-                        c_b1, c_b2, c_b3, c_b4 = st.columns(4)
-                        with c_b1:
-                            if st.button("❤️", key=f"btn_f1_{foto_item}", help="Me gusta"):
-                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "❤️ Me gusta")
-                                st.rerun()
-                        with c_b2:
-                            if st.button("👏", key=f"btn_f2_{foto_item}", help="Excelente"):
-                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "👏 Excelente")
-                                st.rerun()
-                        with c_b3:
-                            if st.button("🔥", key=f"btn_f3_{foto_item}", help="Genial"):
-                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "🔥 Genial")
-                                st.rerun()
-                        with c_b4:
-                            if st.button("🥋", key=f"btn_f4_{foto_item}", help="Orgullo Jinsei"):
-                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "🥋 Orgullo Jinsei")
-                                st.rerun()
-                                
-                        if mi_reaccion != "Ninguna":
-                            if st.button("❌ Retirar reacción", key=f"btn_retirar_f_{foto_item}"):
+                        
+                        # Menú desplegable para escoger o cambiar la reacción
+                        opciones_select = ["Seleccionar reacción...", "❤️ Me gusta", "👏 Excelente", "🔥 Genial", "🥋 Orgullo Jinsei", "❌ Retirar reacción"]
+                        index_default = 0
+                        if mi_reaccion in LISTA_REACCIONS_DISPONIBLES:
+                            index_default = LISTA_REACCIONS_DISPONIBLES.index(mi_reaccion) + 1
+
+                        reaccion_elegida = st.selectbox(
+                            "Elige tu reacción:",
+                            opciones_select,
+                            index=0,
+                            key=f"select_reac_foto_{foto_item}"
+                        )
+                        
+                        if reaccion_elegida != "Seleccionar reacción...":
+                            if reaccion_elegida == "❌ Retirar reacción":
                                 guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, "Retirar")
-                                st.rerun()
+                            else:
+                                guardar_o_actualizar_reaccion(foto_item, st.session_state.usuario_actual, reaccion_elegida)
+                            st.rerun()
 
                     with col_f2:
                         if st.button("🗑️ Eliminar Foto", key=f"del_foto_{foto_item}"):
@@ -720,11 +718,12 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
                 st.info("No hay fotos guardadas aún.")
     else:
         st.subheader("📤 Subir Nuevo Vídeo")
-        with st.form("form_subir_video_multimedia"):
+        with st.form("form_subir_video_multimedia", clear_on_submit=True):
             video_subido = st.file_uploader("Seleccione el archivo de vídeo", type=["mp4", "mov", "avi"])
             submit_video = st.form_submit_button("Guardar Vídeo")
             if submit_video:
                 if video_subido is not None:
+                    VIDEOS_DIR.mkdir(exist_ok=True)
                     ruta_v = VIDEOS_DIR / video_subido.name
                     with open(ruta_v, "wb") as f:
                         f.write(video_subido.getbuffer())
@@ -746,39 +745,31 @@ elif st.session_state.modulo_activo == "Galería y Videos (Multimedia)":
                         video_bytes = v_file.read()
                     st.video(video_bytes, format="video/mp4")
                     
-                    # --- SISTEMA DE REACCIONES (BOTONES INTERACTIVOS) ---
+                    # --- SISTEMA DE REACCIONES (DESPLEGABLE) ---
                     conteo_reacs_v, mi_reaccion_v = obtener_resumen_reacciones(vid_item)
                     
                     resumen_html_v = " ".join([f"<span class='reaccion-badge'>{k}: <b>{v}</b></span>" for k, v in conteo_reacs_v.items() if v > 0])
                     if not resumen_html_v:
                         resumen_html_v = "<span style='color: #64748b; font-size: 13px;'>Sé el primero en reaccionar.</span>"
                     st.markdown(f"**Reacciones Totales:** {resumen_html_v}", unsafe_allow_html=True)
+                    
                     if mi_reaccion_v != "Ninguna":
                         st.caption(f"Tu reacción actual: **{mi_reaccion_v}**")
                         
-                    st.write("Elige tu reacción:")
-                    c_v1, c_v2, c_v3, c_v4 = st.columns(4)
-                    with c_v1:
-                        if st.button("❤️", key=f"btn_v1_{vid_item}", help="Me gusta"):
-                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "❤️ Me gusta")
-                            st.rerun()
-                    with c_v2:
-                        if st.button("👏", key=f"btn_v2_{vid_item}", help="Excelente"):
-                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "👏 Excelente")
-                            st.rerun()
-                    with c_v3:
-                        if st.button("🔥", key=f"btn_v3_{vid_item}", help="Genial"):
-                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "🔥 Genial")
-                            st.rerun()
-                    with c_v4:
-                        if st.button("🥋", key=f"btn_v4_{vid_item}", help="Orgullo Jinsei"):
-                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "🥋 Orgullo Jinsei")
-                            st.rerun()
-                            
-                    if mi_reaccion_v != "Ninguna":
-                        if st.button("❌ Retirar reacción", key=f"btn_retirar_v_{vid_item}"):
+                    opciones_select_v = ["Seleccionar reacción...", "❤️ Me gusta", "👏 Excelente", "🔥 Genial", "🥋 Orgullo Jinsei", "❌ Retirar reacción"]
+                    reaccion_elegida_v = st.selectbox(
+                        "Elige tu reacción:",
+                        opciones_select_v,
+                        index=0,
+                        key=f"select_reac_vid_{vid_item}"
+                    )
+                    
+                    if reaccion_elegida_v != "Seleccionar reacción...":
+                        if reaccion_elegida_v == "❌ Retirar reacción":
                             guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, "Retirar")
-                            st.rerun()
+                        else:
+                            guardar_o_actualizar_reaccion(vid_item, st.session_state.usuario_actual, reaccion_elegida_v)
+                        st.rerun()
 
                     if st.button("🗑️ Eliminar Vídeo", key=f"del_vid_{vid_item}"):
                         st.session_state[f"confirm_del_vid_{vid_item}"] = True
